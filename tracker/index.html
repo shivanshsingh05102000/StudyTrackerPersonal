@@ -1,418 +1,218 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GRIND OS - Progress Tracker</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRIND OS - Study Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">GO</div>
+      <div>
+        <h1>GRIND OS</h1>
+        <p>AFCAT · DSA · Web Dev</p>
+      </div>
+    </div>
 
-<!-- Sidebar -->
-<div class="sb">
-  <div class="sb-logo">
-    <div class="sb-logo-title">GRIND OS</div>
-    <div class="sb-logo-sub">AFCAT · Aug 9, 2026</div>
-  </div>
-  <nav class="sb-nav">
-    <div class="sb-nav-item active" onclick="nav('dashboard',this)">
-      <div class="sb-dot" style="background:var(--afcat)"></div> Dashboard
-    </div>
-    <div class="sb-nav-item" onclick="nav('timetable',this)">
-      <div class="sb-dot" style="background:var(--t3)"></div> Timetable
-    </div>
-    <div class="sb-nav-item" onclick="nav('afcat',this)">
-      <div class="sb-dot" style="background:var(--afcat)"></div> AFCAT Topics
-    </div>
-    <div class="sb-nav-item" onclick="nav('dsa',this)">
-      <div class="sb-dot" style="background:var(--dsa)"></div> DSA · 45 Days
-    </div>
-    <div class="sb-nav-item" onclick="nav('tech',this)">
-      <div class="sb-dot" style="background:var(--tech)"></div> React / Web Dev
-    </div>
-    <div class="sb-nav-item" onclick="nav('analytics',this)">
-      <div class="sb-dot" style="background:var(--tech)"></div> Analytics
-    </div>
-  </nav>
-  <div class="sb-countdown">
-    <div class="sb-days" id="days-left">—</div>
-    <div class="sb-days-lbl">days to AFCAT exam</div>
-  </div>
-  <div class="sb-progress">
-    <div class="sb-prog-item">
-      <div class="sb-prog-label"><span>AFCAT</span><span id="spb-afcat">0%</span></div>
-      <div class="pb-wrap"><div class="pb-fill" id="pb-afcat" style="background:var(--afcat);width:0%"></div></div>
-    </div>
-    <div class="sb-prog-item">
-      <div class="sb-prog-label"><span>DSA</span><span id="spb-dsa">Day 0</span></div>
-      <div class="pb-wrap"><div class="pb-fill" id="pb-dsa" style="background:var(--dsa);width:0%"></div></div>
-    </div>
-    <div class="sb-prog-item">
-      <div class="sb-prog-label"><span>React</span><span id="spb-tech">0%</span></div>
-      <div class="pb-wrap"><div class="pb-fill" id="pb-tech" style="background:var(--tech);width:0%"></div></div>
-    </div>
-  </div>
-</div>
+    <nav class="nav" aria-label="Main navigation">
+      <button class="nav-item active" data-page="dashboard"><span class="dot afcat"></span>Dashboard</button>
+      <button class="nav-item" data-page="timetable"><span class="dot plan"></span>Live Timetable</button>
+      <button class="nav-item" data-page="afcat"><span class="dot afcat"></span>AFCAT Planner</button>
+      <button class="nav-item" data-page="dsa"><span class="dot dsa"></span>DSA 45 Days</button>
+      <button class="nav-item" data-page="analytics"><span class="dot tech"></span>Analytics</button>
+    </nav>
 
-<!-- Main -->
-<div class="main">
-  <div class="topbar">
-    <div class="topbar-left">
-      <div class="topbar-title" id="page-title">Dashboard</div>
-      <div class="topbar-date" id="today-date"></div>
-    </div>
-    <div class="topbar-actions">
-      <button class="btn" onclick="exportData()">Export</button>
-      <button class="btn" onclick="document.getElementById('import-file').click()">Import</button>
-      <button class="btn danger" onclick="resetData()">Reset</button>
-      <button class="btn primary" onclick="openModal()">+ Log session</button>
-      <input type="file" id="import-file" accept="application/json" hidden onchange="importData(event)">
-    </div>
-  </div>
+    <section class="countdown-card">
+      <span class="label">AFCAT target</span>
+      <strong id="days-left">—</strong>
+      <span>days until Aug 9, 2026</span>
+    </section>
 
-  <div class="content">
+    <section class="side-progress">
+      <div class="progress-row"><span>AFCAT</span><b id="side-afcat">0%</b></div>
+      <div class="bar"><span id="bar-afcat"></span></div>
+      <div class="progress-row"><span>DSA</span><b id="side-dsa">0/45</b></div>
+      <div class="bar"><span id="bar-dsa"></span></div>
+      <div class="progress-row"><span>Today</span><b id="side-today">0h</b></div>
+      <div class="bar"><span id="bar-today"></span></div>
+    </section>
+  </aside>
 
-    <!-- DASHBOARD -->
-    <div class="page active" id="page-dashboard">
-      <div class="command-grid">
-        <section class="command-card focus-card">
-          <div class="cc-label">Today command center</div>
-          <div class="focus-title" id="focus-title">Loading plan...</div>
-          <div class="focus-meta" id="focus-meta"></div>
-          <div class="focus-next" id="focus-next"></div>
-          <div class="focus-actions">
-            <button class="btn primary" id="focus-start" onclick="startRecommendedSession()">Start focus</button>
-            <button class="btn" onclick="nav('timetable', document.querySelectorAll('.sb-nav-item')[1])">View timetable</button>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow" id="today-date">Today</p>
+        <h2 id="page-title">Dashboard</h2>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn ghost" id="export-btn">Export</button>
+        <button class="btn ghost" id="import-btn">Import</button>
+        <button class="btn danger" id="reset-btn">Reset</button>
+        <button class="btn primary" id="quick-log-btn">+ Log Session</button>
+        <input type="file" id="import-file" accept="application/json" hidden>
+      </div>
+    </header>
+
+    <section class="page active" id="page-dashboard">
+      <div class="hero-grid">
+        <article class="panel focus-panel">
+          <span class="label">Command center</span>
+          <h3 id="focus-title">Choose today's session</h3>
+          <p id="focus-detail">Your editable timetable and live session tracker now drive the dashboard.</p>
+          <div class="hero-actions">
+            <button class="btn primary" id="start-suggested-btn">Start suggested</button>
+            <button class="btn ghost" data-jump="timetable">Edit timetable</button>
           </div>
-        </section>
+        </article>
 
-        <section class="command-card timer-card">
-          <div class="timer-top">
-            <div>
-              <div class="cc-label">Active session</div>
-              <div class="timer-topic" id="timer-topic">No session running</div>
-            </div>
-            <div class="timer-clock" id="timer-clock">00:00:00</div>
+        <article class="panel timer-panel">
+          <div class="timer-head">
+            <div><span class="label">Live session</span><h3 id="timer-name">No session running</h3></div>
+            <strong id="timer-clock">00:00:00</strong>
           </div>
-          <div class="timer-controls">
-            <select class="fs mini" id="t-sub" onchange="refreshTimerTopicDD(true)">
-              <option value="afcat">AFCAT</option>
-              <option value="dsa">DSA</option>
-              <option value="tech">Tech / React</option>
-            </select>
-            <select class="fs mini" id="t-afcat-sub" style="display:none" onchange="refreshTimerTopicDD()"></select>
-            <select class="fs mini" id="t-topic"></select>
+          <div class="form-grid compact">
+            <select id="timer-domain"></select>
+            <select id="timer-subject"></select>
+            <select id="timer-topic"></select>
           </div>
-          <div class="timer-actions">
-            <button class="btn primary" id="timer-start" onclick="startTimer()">Start</button>
-            <button class="btn" id="timer-pause" onclick="pauseTimer()">Pause</button>
-            <button class="btn" id="timer-finish" onclick="finishTimer()">Finish & save</button>
-            <button class="btn danger" onclick="discardTimer()">Discard</button>
+          <div class="button-row">
+            <button class="btn primary" id="timer-start-btn">Start</button>
+            <button class="btn ghost" id="timer-pause-btn">Pause</button>
+            <button class="btn success" id="timer-finish-btn">Finish & Save</button>
+            <button class="btn danger" id="timer-discard-btn">Discard</button>
           </div>
-        </section>
+        </article>
 
-        <section class="command-card target-card">
-          <div class="cc-label">Daily target</div>
-          <div class="target-line"><span id="today-minutes">0h 0m</span><span>12h goal</span></div>
-          <div class="daily-ring">
-            <div class="daily-fill" id="daily-fill"></div>
-          </div>
-          <div class="target-split" id="target-split"></div>
-        </section>
+        <article class="panel target-panel">
+          <span class="label">Daily target</span>
+          <div class="ring" id="daily-ring"><span id="daily-percent">0%</span></div>
+          <p><strong id="today-total">0h 0m</strong> / 12h logged today</p>
+          <div class="split" id="today-split"></div>
+        </article>
       </div>
 
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="sc-label">AFCAT topics</div>
-          <div class="sc-val" style="color:var(--afcat)" id="s-afcat">0/42</div>
-          <div class="sc-sub">done · <span id="s-afcat-week">0</span> this week</div>
-        </div>
-        <div class="stat-card">
-          <div class="sc-label">DSA challenge</div>
-          <div class="sc-val" style="color:var(--dsa)" id="s-dsa">Day 0/45</div>
-          <div class="sc-sub"><span id="s-dsa-probs">0</span> problems solved</div>
-        </div>
-        <div class="stat-card">
-          <div class="sc-label">React topics</div>
-          <div class="sc-val" style="color:var(--tech)" id="s-tech">0/31</div>
-          <div class="sc-sub"><span id="s-tech-sess">0</span> sessions logged</div>
-        </div>
-        <div class="stat-card">
-          <div class="sc-label">Total study hrs</div>
-          <div class="sc-val" id="s-hours">0h</div>
-          <div class="sc-sub">goal: 12h/day</div>
-        </div>
+      <div class="stat-grid">
+        <article class="stat"><span>AFCAT topics done</span><strong id="stat-afcat">0/0</strong></article>
+        <article class="stat"><span>DSA days complete</span><strong id="stat-dsa">0/45</strong></article>
+        <article class="stat"><span>Questions solved</span><strong id="stat-questions">0</strong></article>
+        <article class="stat"><span>Total study time</span><strong id="stat-hours">0h</strong></article>
       </div>
 
-      <div class="sec-title">This week</div>
-      <div class="week-strip" id="week-strip"></div>
+      <div class="section-head"><h3>Consistency heatmap</h3><span>green = full target, amber = partial, gray = no work</span></div>
+      <div class="heatmap" id="dashboard-heatmap"></div>
 
-      <div class="sec-title">Today's checklist</div>
-      <div class="today-grid">
-        <div class="today-card">
-          <div class="tc-title">AFCAT focus</div>
-          <div id="td-afcat"></div>
-        </div>
-        <div class="today-card">
-          <div class="tc-title">DSA + Tech</div>
-          <div id="td-tech"></div>
-        </div>
+      <div class="two-col">
+        <article class="panel">
+          <div class="section-head compact-head"><h3>Today's timetable</h3><button class="btn small ghost" data-jump="timetable">Manage</button></div>
+          <div id="today-plan" class="list-stack"></div>
+        </article>
+        <article class="panel">
+          <div class="section-head compact-head"><h3>Recent session logs</h3><button class="btn small ghost" id="clear-today-btn">Clear today</button></div>
+          <div id="session-log" class="list-stack"></div>
+        </article>
       </div>
+    </section>
 
-      <div class="sec-title">Session log</div>
-      <div class="session-list" id="sess-log"></div>
-    </div>
-
-    <!-- TIMETABLE -->
-    <div class="page" id="page-timetable">
-      <div class="tt-tabs">
-        <button class="tt-tab active" onclick="switchTT('class',this)">Class day</button>
-        <button class="tt-tab" onclick="switchTT('noclass',this)">No-class day</button>
+    <section class="page" id="page-timetable">
+      <div class="section-head"><div><h3>Editable timetable schema</h3><p>Change any slot, choose AFCAT subject/topic, DSA day, or custom work, then start a live session from that slot.</p></div><button class="btn primary" id="add-slot-btn">+ Add slot</button></div>
+      <div class="toggle-row">
+        <button class="chip active" data-mode="class">Class day</button>
+        <button class="chip" data-mode="noclass">No-class day</button>
       </div>
-      <div id="tt-class"></div>
-      <div id="tt-noclass" style="display:none"></div>
-    </div>
+      <div id="timetable-list" class="timeline"></div>
+    </section>
 
-    <!-- AFCAT -->
-    <div class="page" id="page-afcat">
-      <div class="sub-tabs" id="afcat-tabs"></div>
-      <div class="scroll-box" id="afcat-list"></div>
-    </div>
+    <section class="page" id="page-afcat">
+      <div class="section-head"><div><h3>AFCAT subject planner</h3><p>Pick a subject, then track unlimited sessions for the exact topic you study today.</p></div><button class="btn primary" id="afcat-session-btn">+ Log AFCAT</button></div>
+      <div class="subject-tabs" id="afcat-tabs"></div>
+      <div id="afcat-topics" class="topic-grid"></div>
+    </section>
 
-    <!-- DSA -->
-    <div class="page" id="page-dsa">
-      <div class="dsa-header">
-        <div class="stat-card"><div class="sc-label">Completed</div><div class="sc-val" style="color:var(--dsa)" id="dsa-done">0 / 45</div></div>
-        <div class="stat-card"><div class="sc-label">Current day</div><div class="sc-val" style="color:var(--dsa)" id="dsa-cur">Day 1</div></div>
-        <div class="stat-card"><div class="sc-label">Daily target</div><div class="sc-val" style="color:var(--dsa)">2 probs</div></div>
+    <section class="page" id="page-dsa">
+      <div class="section-head"><div><h3>DSA 45-day challenge</h3><p>Days start empty by design. Add questions only when your instructor releases them.</p></div><button class="btn primary" id="add-question-btn">+ Add DSA question</button></div>
+      <div class="stat-grid dsa-stats">
+        <article class="stat"><span>Challenge progress</span><strong id="dsa-progress">0/45</strong></article>
+        <article class="stat"><span>Easy / Medium / Hard</span><strong id="dsa-difficulty">0 / 0 / 0</strong></article>
+        <article class="stat"><span>Today solved</span><strong id="dsa-today">0</strong></article>
       </div>
-      <div style="display: flex; justify-content: flex-end; margin-bottom: 12px; gap: 8px;">
-        <button class="btn primary mini" onclick="openDsaModal()">+ Log Problem</button>
-        <button class="btn mini" onclick="loadDsaDefaultChallenge()">Load Defaults</button>
+      <div id="dsa-days" class="dsa-days"></div>
+    </section>
+
+    <section class="page" id="page-analytics">
+      <div class="section-head"><div><h3>Visual analytics</h3><p>Use this to balance over-grinding and under-training across subjects.</p></div></div>
+      <div class="analytics-grid">
+        <article class="panel"><h3>Daily consistency</h3><div class="chart" id="consistency-chart"></div></article>
+        <article class="panel"><h3>DSA LeetCode mix</h3><div class="chart" id="dsa-chart"></div></article>
+        <article class="panel"><h3>AFCAT subject balance</h3><div class="chart" id="afcat-chart"></div></article>
+        <article class="panel advisor"><h3>Senior-engineer advisor</h3><div id="advisor-text"></div></article>
       </div>
-      <div class="scroll-box" id="dsa-list"></div>
-    </div>
+    </section>
+  </main>
 
-    <!-- TECH -->
-    <div class="page" id="page-tech">
-      <div class="sub-tabs">
-        <button class="sub-tab a-tech" data-cat="react" onclick="switchTech('react',this)">React Hooks</button>
-        <button class="sub-tab" data-cat="next" onclick="switchTech('next',this)">Next.js</button>
-        <button class="sub-tab" data-cat="internshala" onclick="switchTech('internshala',this)">Internshala</button>
+  <dialog id="session-modal" class="modal">
+    <form method="dialog" class="modal-card" id="session-form">
+      <div class="modal-head"><h3>Log study session</h3><button type="button" class="icon-btn" data-close="session-modal">×</button></div>
+      <div class="form-grid">
+        <label>Date<input type="date" id="log-date" required></label>
+        <label>Domain<select id="log-domain"></select></label>
+        <label>Subject<select id="log-subject"></select></label>
+        <label>Topic<select id="log-topic"></select></label>
+        <label>Minutes<input type="number" id="log-minutes" min="1" value="90" required></label>
+        <label>Status<select id="log-status"><option value="done">Done</option><option value="partial">Partial</option></select></label>
       </div>
-      <div class="scroll-box" id="tech-list"></div>
-    </div>
+      <label>Summary<textarea id="log-summary" rows="3" placeholder="What did you study? Objectives completed?"></textarea></label>
+      <label>Next target<textarea id="log-next" rows="2" placeholder="What should be targeted next time?"></textarea></label>
+      <div class="button-row right"><button type="button" class="btn ghost" data-close="session-modal">Cancel</button><button class="btn primary" type="submit">Save session</button></div>
+    </form>
+  </dialog>
 
-    <!-- ANALYTICS -->
-    <div class="page" id="page-analytics">
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="sc-label">Monthly Grind Days</div>
-          <div class="sc-val" style="color:var(--tech)" id="an-active-days">0/30</div>
-          <div class="sc-sub">days with sessions logged</div>
-        </div>
-        <div class="stat-card">
-          <div class="sc-label">Perfect 12H Days</div>
-          <div class="sc-val" style="color:var(--afcat)" id="an-perfect-days">0</div>
-          <div class="sc-sub">achieved 12h target</div>
-        </div>
-        <div class="stat-card">
-          <div class="sc-label">Solved DSA Problems</div>
-          <div class="sc-val" style="color:var(--dsa)" id="an-solved-dsa">0</div>
-          <div class="sc-sub">categorized in difficulty</div>
-        </div>
-        <div class="stat-card">
-          <div class="sc-label">Focus Ratio</div>
-          <div class="sc-val" id="an-focus-ratio">0%</div>
-          <div class="sc-sub">AFCAT vs DSA vs Tech</div>
-        </div>
+  <dialog id="slot-modal" class="modal">
+    <form method="dialog" class="modal-card" id="slot-form">
+      <div class="modal-head"><h3 id="slot-title">Edit slot</h3><button type="button" class="icon-btn" data-close="slot-modal">×</button></div>
+      <input type="hidden" id="slot-id">
+      <div class="form-grid">
+        <label>Time<input id="slot-time" placeholder="12:00–1:30 PM" required></label>
+        <label>Domain<select id="slot-domain"></select></label>
+        <label>Subject<select id="slot-subject"></select></label>
+        <label>Topic<select id="slot-topic"></select></label>
       </div>
+      <label>Title<input id="slot-name" placeholder="AFCAT — English practice" required></label>
+      <label>Plan notes<textarea id="slot-desc" rows="3" placeholder="PYQs, notes, mock, revision..."></textarea></label>
+      <div class="button-row right"><button type="button" class="btn danger" id="delete-slot-btn">Delete</button><button type="button" class="btn ghost" data-close="slot-modal">Cancel</button><button class="btn primary" type="submit">Save slot</button></div>
+    </form>
+  </dialog>
 
-      <section class="command-card" style="margin-bottom: 20px;">
-        <div class="cc-label">Consistency Matrix (Current Month)</div>
-        <div style="display: flex; flex-direction: column; gap: 12px; align-items: center; justify-content: center; padding: 10px 0;">
-          <div class="consistency-grid" id="consistency-grid"></div>
-          <div class="consistency-legend" style="display: flex; gap: 8px; align-items: center; font-size: 11px; color: var(--t3);">
-            <span>Less</span>
-            <div class="grid-cell lvl-0" style="width: 14px; height: 14px; background: rgba(255,255,255,0.06); border-radius: 3px;"></div>
-            <div class="grid-cell lvl-1" style="width: 14px; height: 14px; background: rgba(35, 201, 142, 0.25); border-radius: 3px;"></div>
-            <div class="grid-cell lvl-2" style="width: 14px; height: 14px; background: rgba(35, 201, 142, 0.55); border-radius: 3px;"></div>
-            <div class="grid-cell lvl-3" style="width: 14px; height: 14px; background: var(--tech); border-radius: 3px;"></div>
-            <span>More</span>
-          </div>
-        </div>
-      </section>
-
-      <div class="today-grid">
-        <div class="today-card">
-          <div class="tc-title">DSA Difficulty Distribution</div>
-          <div class="chart-container" id="dsa-chart-container" style="display: flex; align-items: center; justify-content: center; min-height: 180px;"></div>
-        </div>
-        <div class="today-card">
-          <div class="tc-title">AFCAT Study Balance</div>
-          <div class="chart-container" id="afcat-chart-container" style="display: flex; align-items: center; justify-content: center; min-height: 180px;"></div>
-        </div>
+  <dialog id="question-modal" class="modal">
+    <form method="dialog" class="modal-card" id="question-form">
+      <div class="modal-head"><h3>Add DSA question</h3><button type="button" class="icon-btn" data-close="question-modal">×</button></div>
+      <input type="hidden" id="question-id">
+      <div class="form-grid">
+        <label>Challenge day<input type="number" id="question-day" min="1" max="45" value="1" required></label>
+        <label>Complexity<select id="question-complexity"><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select></label>
+        <label>Status<select id="question-status"><option value="todo">Todo</option><option value="solved">Solved</option></select></label>
+        <label>LeetCode link<input type="url" id="question-link" placeholder="https://leetcode.com/problems/..."></label>
       </div>
+      <label>Question title<input id="question-title" placeholder="Two Sum" required></label>
+      <label>Pattern / notes<textarea id="question-notes" rows="3" placeholder="Hash map, sliding window, recurrence..."></textarea></label>
+      <div class="button-row right"><button type="button" class="btn ghost" data-close="question-modal">Cancel</button><button class="btn primary" type="submit">Save question</button></div>
+    </form>
+  </dialog>
 
-      <section class="command-card" style="margin-top: 20px;">
-        <div class="cc-label">Grind OS Balance Advisor</div>
-        <div class="advisor-content" id="advisor-content" style="color: var(--t2); font-size: 12.5px; line-height: 1.6; padding: 4px 0;">
-          Grinding data is loading...
-        </div>
-      </section>
-    </div>
+  <dialog id="finish-modal" class="modal">
+    <form method="dialog" class="modal-card" id="finish-form">
+      <div class="modal-head"><h3>Finish live session</h3><button type="button" class="icon-btn" data-close="finish-modal">×</button></div>
+      <p class="muted" id="finish-meta"></p>
+      <label>Summary<textarea id="finish-summary" rows="3" placeholder="Few lines: what did you study and what objectives were completed?"></textarea></label>
+      <label>Next target<textarea id="finish-next" rows="2" placeholder="Target for the next day / next session"></textarea></label>
+      <div class="button-row right"><button type="button" class="btn ghost" data-close="finish-modal">Cancel</button><button class="btn primary" type="submit">Save live session</button></div>
+    </form>
+  </dialog>
 
-  </div>
-</div>
-
-<!-- Modal -->
-<div class="overlay" id="overlay">
-  <div class="modal">
-    <div class="modal-title">Log a session</div>
-    <div class="fg">
-      <label class="fl">Subject</label>
-      <select class="fs" id="m-sub" onchange="refreshTopicDD(true)">
-        <option value="afcat">AFCAT</option>
-        <option value="dsa">DSA</option>
-        <option value="tech">Tech / React</option>
-      </select>
-    </div>
-    <div class="fg" id="m-afcat-sub-fg" style="display:none">
-      <label class="fl">AFCAT Subject</label>
-      <select class="fs" id="m-afcat-sub" onchange="refreshTopicDD()">
-        <option value="English">English</option>
-        <option value="General Awareness">General Awareness</option>
-        <option value="Numerical Ability">Numerical Ability</option>
-        <option value="Reasoning & Military">Reasoning & Military</option>
-      </select>
-    </div>
-    <div class="fg">
-      <label class="fl">Topic</label>
-      <select class="fs" id="m-topic"></select>
-    </div>
-    <div class="fg">
-      <label class="fl">Duration (minutes)</label>
-      <input type="number" class="fi" id="m-dur" value="90" min="15" max="300">
-    </div>
-    <div class="fg">
-      <label class="fl">Status</label>
-      <div class="status-row">
-        <button class="status-btn" onclick="setStatus('in-progress',this)">In progress</button>
-        <button class="status-btn sel" onclick="setStatus('done',this)">Done ✓</button>
-      </div>
-    </div>
-    <div class="fg">
-      <label class="fl">Notes (optional)</label>
-      <textarea class="fta" id="m-notes" placeholder="What did you cover?"></textarea>
-    </div>
-    <div class="modal-actions">
-      <button class="btn" onclick="closeModal()">Cancel</button>
-      <button class="btn primary" onclick="saveSession()">Save</button>
-    </div>
-  </div>
-</div>
-
-<!-- DSA Modal -->
-<div class="overlay" id="dsa-modal">
-  <div class="modal">
-    <div class="modal-title" id="dsa-modal-title">Log DSA Question</div>
-    <input type="hidden" id="dsa-q-index" value="-1">
-    <div class="fg">
-      <label class="fl">Day Number (1–45)</label>
-      <input type="number" class="fi" id="dsa-q-day" min="1" max="45" value="1">
-    </div>
-    <div class="fg">
-      <label class="fl">Question Title</label>
-      <input type="text" class="fi" id="dsa-q-title" placeholder="e.g. Two Sum">
-    </div>
-    <div class="fg">
-      <label class="fl">Complexity</label>
-      <select class="fs" id="dsa-q-complex">
-        <option value="easy">Easy (Green)</option>
-        <option value="medium">Medium (Yellow)</option>
-        <option value="hard">Hard (Red)</option>
-      </select>
-    </div>
-    <div class="fg">
-      <label class="fl">Status</label>
-      <div class="status-row">
-        <button class="status-btn sel" id="dsa-btn-solved" onclick="setDsaStatus('solved',this)">Solved ✓</button>
-        <button class="status-btn" id="dsa-btn-attempted" onclick="setDsaStatus('attempted',this)">Attempted …</button>
-      </div>
-    </div>
-    <div class="fg">
-      <label class="fl">LeetCode Link (Optional)</label>
-      <input type="text" class="fi" id="dsa-q-link" placeholder="https://leetcode.com/problems/...">
-    </div>
-    <div class="modal-actions">
-      <button class="btn" onclick="closeDsaModal()">Cancel</button>
-      <button class="btn primary" onclick="saveDsaQuestion()">Save Question</button>
-    </div>
-  </div>
-</div>
-
-<!-- Timetable Modal -->
-<div class="overlay" id="timetable-modal">
-  <div class="modal">
-    <div class="modal-title">Edit Timetable Slot</div>
-    <input type="hidden" id="tt-slot-index" value="-1">
-    <input type="hidden" id="tt-slot-list-id" value="">
-    <div class="fg">
-      <label class="fl">Time Range</label>
-      <input type="text" class="fi" id="tt-slot-time" placeholder="e.g. 12:00–1:30 PM">
-    </div>
-    <div class="fg">
-      <label class="fl">Slot Name</label>
-      <input type="text" class="fi" id="tt-slot-name" placeholder="e.g. AFCAT — Subject 1">
-    </div>
-    <div class="fg">
-      <label class="fl">Description</label>
-      <input type="text" class="fi" id="tt-slot-desc" placeholder="e.g. Deep study · notes + YouTube">
-    </div>
-    <div class="fg">
-      <label class="fl">Category Type</label>
-      <select class="fs" id="tt-slot-type">
-        <option value="afcat">AFCAT</option>
-        <option value="dsa">DSA</option>
-        <option value="tech">Tech / React</option>
-        <option value="break">Break / Sleep</option>
-      </select>
-    </div>
-    <div class="modal-actions">
-      <button class="btn" onclick="closeTimetableModal()">Cancel</button>
-      <button class="btn primary" onclick="saveTimetableSlot()">Save Changes</button>
-    </div>
-  </div>
-</div>
-
-<!-- Summary Modal -->
-<div class="overlay" id="summary-modal">
-  <div class="modal">
-    <div class="modal-title">Session Completed! Add Summary</div>
-    <input type="hidden" id="summary-sess-ts" value="">
-    <div class="fg">
-      <label class="fl">What did you study / cover?</label>
-      <textarea class="fta" id="sum-covered" placeholder="Briefly describe what you studied..."></textarea>
-    </div>
-    <div class="fg">
-      <label class="fl">Objectives Completed</label>
-      <textarea class="fta" id="sum-completed" placeholder="Enter objectives completed (one per line)..."></textarea>
-    </div>
-    <div class="fg">
-      <label class="fl">Targets for Tomorrow</label>
-      <textarea class="fta" id="sum-targets" placeholder="What are your targets for the next session?"></textarea>
-    </div>
-    <div class="modal-actions">
-      <button class="btn" onclick="closeSummaryModal()">Skip</button>
-      <button class="btn primary" onclick="saveSessionSummary()">Save Summary</button>
-    </div>
-  </div>
-</div>
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
