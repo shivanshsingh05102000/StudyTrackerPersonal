@@ -15,17 +15,20 @@
       <div class="brand-mark">GO</div>
       <div>
         <h1>GRIND OS</h1>
-        <p>AFCAT · DSA · Web Dev</p>
+        <p>AFCAT · Math · English · DSA</p>
       </div>
     </div>
 
     <nav class="nav" aria-label="Main navigation">
       <button class="nav-item active" data-page="dashboard"><span class="dot afcat"></span>Dashboard</button>
       <button class="nav-item" data-page="timetable"><span class="dot plan"></span>Live Timetable</button>
-      <button class="nav-item" data-page="afcat"><span class="dot afcat"></span>AFCAT Planner</button>
-      <button class="nav-item" data-page="dsa"><span class="dot dsa"></span>DSA 45 Days</button>
       <button class="nav-item" data-page="english"><span class="dot" style="background:#f472b6"></span>English 45 Days</button>
+      <button class="nav-item" data-page="math"><span class="dot" style="background:#34d399"></span>Math Topics</button>
+      <button class="nav-item" data-page="gk"><span class="dot" style="background:#a78bfa"></span>GK · 1.5h Daily</button>
+      <button class="nav-item" data-page="reasoning"><span class="dot" style="background:#fb923c"></span>Reasoning · 1h Daily</button>
+      <button class="nav-item" data-page="dsa"><span class="dot dsa"></span>DSA 45 Days</button>
       <button class="nav-item" data-page="analytics"><span class="dot tech"></span>Analytics</button>
+      <button class="manual-log-link" onclick="openSession()">Manual Log</button>
     </nav>
 
     <section class="countdown-card">
@@ -35,10 +38,10 @@
     </section>
 
     <section class="side-progress">
-      <div class="progress-row"><span>AFCAT</span><b id="side-afcat">0%</b></div>
-      <div class="bar"><span id="bar-afcat"></span></div>
-      <div class="progress-row"><span>DSA</span><b id="side-dsa">0/45</b></div>
-      <div class="bar"><span id="bar-dsa"></span></div>
+      <div class="progress-row"><span>English</span><b id="side-english">0/45</b></div>
+      <div class="bar"><span id="bar-english"></span></div>
+      <div class="progress-row"><span>Math</span><b id="side-math">0/21</b></div>
+      <div class="bar"><span id="bar-math"></span></div>
       <div class="progress-row"><span>Today</span><b id="side-today">0h</b></div>
       <div class="bar"><span id="bar-today"></span></div>
     </section>
@@ -54,7 +57,6 @@
         <button class="btn ghost" id="export-btn">Export</button>
         <button class="btn ghost" id="import-btn">Import</button>
         <button class="btn danger" id="reset-btn">Reset</button>
-        <button class="btn primary" id="quick-log-btn">+ Log Session</button>
         <input type="file" id="import-file" accept="application/json" hidden>
       </div>
     </header>
@@ -98,9 +100,9 @@
       </div>
 
       <div class="stat-grid">
-        <article class="stat"><span>AFCAT topics done</span><strong id="stat-afcat">0/0</strong></article>
+        <article class="stat"><span>English days done</span><strong id="stat-english">0/45</strong></article>
+        <article class="stat"><span>Math topics done</span><strong id="stat-math">0/21</strong></article>
         <article class="stat"><span>DSA days complete</span><strong id="stat-dsa">0/45</strong></article>
-        <article class="stat"><span>Questions solved</span><strong id="stat-questions">0</strong></article>
         <article class="stat"><span>Total study time</span><strong id="stat-hours">0h</strong></article>
       </div>
 
@@ -120,19 +122,10 @@
     </section>
 
     <section class="page" id="page-timetable">
-      <div class="section-head"><div><h3>Editable timetable schema</h3><p>Change any slot, choose AFCAT subject/topic, DSA day, or custom work, then start a live session from that slot.</p></div><button class="btn primary" id="add-slot-btn">+ Add slot</button></div>
-      <div class="toggle-row">
-        <button class="chip active" data-mode="class">Class day</button>
-        <button class="chip" data-mode="noclass">No-class day</button>
-      </div>
+      <div class="section-head"><div><h3>Editable timetable</h3><p>Change any slot, choose a domain/topic, then start a live session from that slot.</p></div><button class="btn primary" id="add-slot-btn">+ Add slot</button></div>
       <div id="timetable-list" class="timeline"></div>
     </section>
 
-    <section class="page" id="page-afcat">
-      <div class="section-head"><div><h3>AFCAT subject planner</h3><p>Pick a subject, then track unlimited sessions for the exact topic you study today.</p></div><button class="btn primary" id="afcat-session-btn">+ Log AFCAT</button></div>
-      <div class="subject-tabs" id="afcat-tabs"></div>
-      <div id="afcat-topics" class="topic-grid"></div>
-    </section>
 
     <section class="page" id="page-dsa">
       <div class="section-head"><div><h3>DSA 45-day challenge</h3><p>Days start empty by design. Add questions only when your instructor releases them.</p></div><button class="btn primary" id="add-question-btn">+ Add DSA question</button></div>
@@ -155,6 +148,40 @@
       <div id="english-days" class="dsa-days"></div>
     </section>
 
+    <section class="page" id="page-math">
+      <div class="section-head"><div><h3>Math Topics</h3><p>Topic-level AFCAT math tracker grouped by subject, with recommended session time by difficulty.</p></div></div>
+      <div class="stat-grid dsa-stats">
+        <article class="stat"><span>Topics complete</span><strong id="math-progress">0/21</strong></article>
+        <article class="stat"><span>Sessions logged</span><strong id="math-sessions">0</strong></article>
+        <article class="stat"><span>Today's sessions</span><strong id="math-today">0</strong></article>
+      </div>
+      <div id="math-groups"></div>
+    </section>
+
+    <section class="page" id="page-gk">
+      <div class="section-head">
+        <div><h3>General Knowledge</h3><p>Target: 1.5 hours daily · Content coming soon</p></div>
+      </div>
+      <article class="panel" style="text-align:center; padding: 60px 20px;">
+        <span style="font-size: 3rem">📚</span>
+        <h3 style="margin-top: 16px">GK content will be added here</h3>
+        <p>Topics: History · Geography · Polity · Economy · Science · Defence · Current Affairs · Static GK</p>
+        <p style="margin-top: 12px; color: var(--text-dim)">Daily target: 90 min. Use the timer to log sessions now.</p>
+      </article>
+    </section>
+
+    <section class="page" id="page-reasoning">
+      <div class="section-head">
+        <div><h3>Reasoning & Military Aptitude</h3><p>Target: 1 hour daily · Content coming soon</p></div>
+      </div>
+      <article class="panel" style="text-align:center; padding: 60px 20px;">
+        <span style="font-size: 3rem">🧠</span>
+        <h3 style="margin-top: 16px">Reasoning content will be added here</h3>
+        <p>Topics: Verbal Reasoning · Non-Verbal Reasoning · Series · Analogy · Coding-Decoding · Blood Relations · Venn Diagrams</p>
+        <p style="margin-top: 12px; color: var(--text-dim)">Daily target: 60 min. Use the timer to log sessions now.</p>
+      </article>
+    </section>
+
     <section class="page" id="page-analytics">
       <div class="section-head"><div><h3>Visual analytics</h3><p>Use this to balance over-grinding and under-training across subjects.</p></div></div>
 
@@ -168,8 +195,9 @@
       <div class="analytics-grid">
         <article class="panel"><h3>Daily consistency</h3><div class="chart" id="consistency-chart"></div></article>
         <article class="panel"><h3>DSA LeetCode mix</h3><div class="chart" id="dsa-chart"></div></article>
-        <article class="panel"><h3>AFCAT subject balance</h3><div class="chart" id="afcat-chart"></div></article>
-        <article class="panel advisor"><h3>Senior-engineer advisor</h3><div id="advisor-text"></div></article>
+        <article class="panel"><h3>Math progress</h3><div class="chart" id="math-chart"></div></article>
+        <article class="panel"><h3>Daily time split</h3><div class="chart" id="daily-split-chart"></div></article>
+        <article class="panel advisor"><h3>Study advisor</h3><div id="advisor-text"></div></article>
       </div>
     </section>
   </main>
@@ -201,7 +229,7 @@
         <label>Subject<select id="slot-subject"></select></label>
         <label>Topic<select id="slot-topic"></select></label>
       </div>
-      <label>Title<input id="slot-name" placeholder="AFCAT — English practice" required></label>
+      <label>Title<input id="slot-name" placeholder="English — grammar practice" required></label>
       <label>Plan notes<textarea id="slot-desc" rows="3" placeholder="PYQs, notes, mock, revision..."></textarea></label>
       <div class="button-row right"><button type="button" class="btn danger" id="delete-slot-btn">Delete</button><button type="button" class="btn ghost" data-close="slot-modal">Cancel</button><button class="btn primary" type="submit">Save slot</button></div>
     </form>
