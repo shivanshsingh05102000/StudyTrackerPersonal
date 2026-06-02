@@ -24,6 +24,7 @@
       <button class="nav-item" data-page="timetable"><span class="dot plan"></span>Live Timetable</button>
       <button class="nav-item" data-page="afcat"><span class="dot afcat"></span>AFCAT Planner</button>
       <button class="nav-item" data-page="dsa"><span class="dot dsa"></span>DSA 45 Days</button>
+      <button class="nav-item" data-page="english"><span class="dot" style="background:#f472b6"></span>English 45 Days</button>
       <button class="nav-item" data-page="analytics"><span class="dot tech"></span>Analytics</button>
     </nav>
 
@@ -143,8 +144,27 @@
       <div id="dsa-days" class="dsa-days"></div>
     </section>
 
+    <section class="page" id="page-english">
+      <div class="section-head"><div><h3>English 45-day challenge</h3><p>Follow the daily Aman Vashist video roadmap. All days stay unlocked so you can jump ahead or revise anytime.</p></div></div>
+      <div class="stat-grid dsa-stats">
+        <article class="stat"><span>Days complete</span><strong id="english-progress">0/45</strong></article>
+        <article class="stat"><span>Videos watched</span><strong id="english-videos">0</strong></article>
+        <article class="stat"><span>Today completed</span><strong id="english-today">0</strong></article>
+      </div>
+      <div id="english-next" class="english-next"></div>
+      <div id="english-days" class="dsa-days"></div>
+    </section>
+
     <section class="page" id="page-analytics">
       <div class="section-head"><div><h3>Visual analytics</h3><p>Use this to balance over-grinding and under-training across subjects.</p></div></div>
+
+      <article class="panel" style="margin-bottom: 18px;">
+        <div class="section-head compact-head">
+          <h3>Overall progress over time</h3>
+          <span>Cumulative sessions completed per domain · last 60 days</span>
+        </div>
+        <div id="progress-chart" style="position:relative; height: 260px; padding: 10px 0;"></div>
+      </article>
       <div class="analytics-grid">
         <article class="panel"><h3>Daily consistency</h3><div class="chart" id="consistency-chart"></div></article>
         <article class="panel"><h3>DSA LeetCode mix</h3><div class="chart" id="dsa-chart"></div></article>
