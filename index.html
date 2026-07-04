@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GRIND OS - Study Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">GO</div>
+      <div>
+        <h1>GRIND OS</h1>
+        <p>AFCAT · Math · English · DSA</p>
+      </div>
+    </div>
+
+    <nav class="nav" aria-label="Main navigation">
+      <button class="nav-item active" data-page="dashboard"><span class="dot afcat"></span>Dashboard</button>
+      <button class="nav-item" data-page="timetable"><span class="dot plan"></span>Live Timetable</button>
+      <button class="nav-item" data-page="english"><span class="dot" style="background:#f472b6"></span>English 45 Days</button>
+      <button class="nav-item" data-page="math"><span class="dot" style="background:#34d399"></span>Math Topics</button>
+      <button class="nav-item" data-page="gk"><span class="dot" style="background:#a78bfa"></span>GK · 1.5h Daily</button>
+      <button class="nav-item" data-page="reasoning"><span class="dot" style="background:#fb923c"></span>Reasoning · 1h Daily</button>
+      <button class="nav-item" data-page="dsa"><span class="dot dsa"></span>DSA 45 Days</button>
+      <button class="nav-item" data-page="analytics"><span class="dot tech"></span>Analytics</button>
+      <button class="manual-log-link" onclick="openSession()">Manual Log</button>
+    </nav>
+
+    <section class="countdown-card">
+      <span class="label">AFCAT target</span>
+      <strong id="days-left">—</strong>
+      <span>days until Aug 9, 2026</span>
+    </section>
+
+    <section class="side-progress">
+      <div class="progress-row"><span>English</span><b id="side-english">0/45</b></div>
+      <div class="bar"><span id="bar-english"></span></div>
+      <div class="progress-row"><span>Math</span><b id="side-math">0/21</b></div>
+      <div class="bar"><span id="bar-math"></span></div>
+      <div class="progress-row"><span>Today</span><b id="side-today">0h</b></div>
+      <div class="bar"><span id="bar-today"></span></div>
+    </section>
+  </aside>
+
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow" id="today-date">Today</p>
+        <h2 id="page-title">Dashboard</h2>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn ghost" id="export-btn">Export</button>
+        <button class="btn ghost" id="import-btn">Import</button>
+        <button class="btn danger" id="reset-btn">Reset</button>
+        <input type="file" id="import-file" accept="application/json" hidden>
+      </div>
+    </header>
+
+    <section class="page active" id="page-dashboard">
+      <div class="hero-grid">
+        <article class="panel focus-panel">
+          <span class="label">Command center</span>
+          <h3 id="focus-title">Choose today's session</h3>
+          <p id="focus-detail">Your editable timetable and live session tracker now drive the dashboard.</p>
+          <div class="hero-actions">
+            <button class="btn primary" id="start-suggested-btn">Start suggested</button>
+            <button class="btn ghost" data-jump="timetable">Edit timetable</button>
+          </div>
+        </article>
+
+        <article class="panel timer-panel">
+          <div class="timer-head">
+            <div><span class="label">Live session</span><h3 id="timer-name">No session running</h3></div>
+            <strong id="timer-clock">00:00:00</strong>
+          </div>
+          <div class="form-grid compact">
+            <select id="timer-domain"></select>
+            <select id="timer-subject"></select>
+            <select id="timer-topic"></select>
+          </div>
+          <div class="button-row">
+            <button class="btn primary" id="timer-start-btn">Start</button>
+            <button class="btn ghost" id="timer-pause-btn">Pause</button>
+            <button class="btn success" id="timer-finish-btn">Finish & Save</button>
+            <button class="btn danger" id="timer-discard-btn">Discard</button>
+          </div>
+        </article>
+
+        <article class="panel target-panel">
+          <span class="label">Daily target</span>
+          <div class="ring" id="daily-ring"><span id="daily-percent">0%</span></div>
+          <p><strong id="today-total">0h 0m</strong> / 12h logged today</p>
+          <div class="split" id="today-split"></div>
+        </article>
+      </div>
+
+      <div class="stat-grid">
+        <article class="stat"><span>English days done</span><strong id="stat-english">0/45</strong></article>
+        <article class="stat"><span>Math topics done</span><strong id="stat-math">0/21</strong></article>
+        <article class="stat"><span>DSA days complete</span><strong id="stat-dsa">0/45</strong></article>
+        <article class="stat"><span>Total study time</span><strong id="stat-hours">0h</strong></article>
+      </div>
+
+      <div class="section-head"><h3>Consistency heatmap</h3><span>green = full target, amber = partial, gray = no work</span></div>
+      <div class="heatmap" id="dashboard-heatmap"></div>
+
+      <div class="two-col">
+        <article class="panel">
+          <div class="section-head compact-head"><h3>Today's timetable</h3><button class="btn small ghost" data-jump="timetable">Manage</button></div>
+          <div id="today-plan" class="list-stack"></div>
+        </article>
+        <article class="panel">
+          <div class="section-head compact-head"><h3>Recent session logs</h3><button class="btn small ghost" id="clear-today-btn">Clear today</button></div>
+          <div id="session-log" class="list-stack"></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="page" id="page-timetable">
+      <div class="section-head"><div><h3>Editable timetable</h3><p>Change any slot, choose a domain/topic, then start a live session from that slot.</p></div><button class="btn primary" id="add-slot-btn">+ Add slot</button></div>
+      <div id="timetable-list" class="timeline"></div>
+    </section>
+
+
+    <section class="page" id="page-dsa">
+      <div class="section-head"><div><h3>DSA 45-day challenge</h3><p>Days start empty by design. Add questions only when your instructor releases them.</p></div><button class="btn primary" id="add-question-btn">+ Add DSA question</button></div>
+      <div class="stat-grid dsa-stats">
+        <article class="stat"><span>Challenge progress</span><strong id="dsa-progress">0/45</strong></article>
+        <article class="stat"><span>Easy / Medium / Hard</span><strong id="dsa-difficulty">0 / 0 / 0</strong></article>
+        <article class="stat"><span>Today solved</span><strong id="dsa-today">0</strong></article>
+      </div>
+      <div id="dsa-days" class="dsa-days"></div>
+    </section>
+
+    <section class="page" id="page-english">
+      <div class="section-head"><div><h3>English 45-day challenge</h3><p>Follow the daily Aman Vashist video roadmap. All days stay unlocked so you can jump ahead or revise anytime.</p></div></div>
+      <div class="stat-grid dsa-stats">
+        <article class="stat"><span>Days complete</span><strong id="english-progress">0/45</strong></article>
+        <article class="stat"><span>Videos watched</span><strong id="english-videos">0</strong></article>
+        <article class="stat"><span>Today completed</span><strong id="english-today">0</strong></article>
+      </div>
+      <div id="english-next" class="english-next"></div>
+      <div id="english-days" class="dsa-days"></div>
+    </section>
+
+    <section class="page" id="page-math">
+      <div class="section-head"><div><h3>Math Topics</h3><p>Topic-level AFCAT math tracker grouped by subject, with recommended session time by difficulty.</p></div></div>
+      <div class="stat-grid dsa-stats">
+        <article class="stat"><span>Topics complete</span><strong id="math-progress">0/21</strong></article>
+        <article class="stat"><span>Sessions logged</span><strong id="math-sessions">0</strong></article>
+        <article class="stat"><span>Today's sessions</span><strong id="math-today">0</strong></article>
+      </div>
+      <div id="math-groups"></div>
+    </section>
+
+    <section class="page" id="page-gk">
+      <div class="section-head">
+        <div><h3>General Knowledge</h3><p>Target: 1.5 hours daily · Content coming soon</p></div>
+      </div>
+      <article class="panel" style="text-align:center; padding: 60px 20px;">
+        <span style="font-size: 3rem">📚</span>
+        <h3 style="margin-top: 16px">GK content will be added here</h3>
+        <p>Topics: History · Geography · Polity · Economy · Science · Defence · Current Affairs · Static GK</p>
+        <p style="margin-top: 12px; color: var(--text-dim)">Daily target: 90 min. Use the timer to log sessions now.</p>
+      </article>
+    </section>
+
+    <section class="page" id="page-reasoning">
+      <div class="section-head">
+        <div><h3>Reasoning & Military Aptitude</h3><p>Target: 1 hour daily · Content coming soon</p></div>
+      </div>
+      <article class="panel" style="text-align:center; padding: 60px 20px;">
+        <span style="font-size: 3rem">🧠</span>
+        <h3 style="margin-top: 16px">Reasoning content will be added here</h3>
+        <p>Topics: Verbal Reasoning · Non-Verbal Reasoning · Series · Analogy · Coding-Decoding · Blood Relations · Venn Diagrams</p>
+        <p style="margin-top: 12px; color: var(--text-dim)">Daily target: 60 min. Use the timer to log sessions now.</p>
+      </article>
+    </section>
+
+    <section class="page" id="page-analytics">
+      <div class="section-head"><div><h3>Visual analytics</h3><p>Use this to balance over-grinding and under-training across subjects.</p></div></div>
+
+      <article class="panel" style="margin-bottom: 18px;">
+        <div class="section-head compact-head">
+          <h3>Overall progress over time</h3>
+          <span>Cumulative sessions completed per domain · last 60 days</span>
+        </div>
+        <div id="progress-chart" style="position:relative; height: 260px; padding: 10px 0;"></div>
+      </article>
+      <div class="analytics-grid">
+        <article class="panel"><h3>Daily consistency</h3><div class="chart" id="consistency-chart"></div></article>
+        <article class="panel"><h3>DSA LeetCode mix</h3><div class="chart" id="dsa-chart"></div></article>
+        <article class="panel"><h3>Math progress</h3><div class="chart" id="math-chart"></div></article>
+        <article class="panel"><h3>Daily time split</h3><div class="chart" id="daily-split-chart"></div></article>
+        <article class="panel advisor"><h3>Study advisor</h3><div id="advisor-text"></div></article>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="session-modal" class="modal">
+    <form method="dialog" class="modal-card" id="session-form">
+      <div class="modal-head"><h3>Log study session</h3><button type="button" class="icon-btn" data-close="session-modal">×</button></div>
+      <div class="form-grid">
+        <label>Date<input type="date" id="log-date" required></label>
+        <label>Domain<select id="log-domain"></select></label>
+        <label>Subject<select id="log-subject"></select></label>
+        <label>Topic<select id="log-topic"></select></label>
+        <label>Minutes<input type="number" id="log-minutes" min="1" value="90" required></label>
+        <label>Status<select id="log-status"><option value="done">Done</option><option value="partial">Partial</option></select></label>
+      </div>
+      <label>Summary<textarea id="log-summary" rows="3" placeholder="What did you study? Objectives completed?"></textarea></label>
+      <label>Next target<textarea id="log-next" rows="2" placeholder="What should be targeted next time?"></textarea></label>
+      <div class="button-row right"><button type="button" class="btn ghost" data-close="session-modal">Cancel</button><button class="btn primary" type="submit">Save session</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="slot-modal" class="modal">
+    <form method="dialog" class="modal-card" id="slot-form">
+      <div class="modal-head"><h3 id="slot-title">Edit slot</h3><button type="button" class="icon-btn" data-close="slot-modal">×</button></div>
+      <input type="hidden" id="slot-id">
+      <div class="form-grid">
+        <label>Time<input id="slot-time" placeholder="12:00–1:30 PM" required></label>
+        <label>Domain<select id="slot-domain"></select></label>
+        <label>Subject<select id="slot-subject"></select></label>
+        <label>Topic<select id="slot-topic"></select></label>
+      </div>
+      <label>Title<input id="slot-name" placeholder="English — grammar practice" required></label>
+      <label>Plan notes<textarea id="slot-desc" rows="3" placeholder="PYQs, notes, mock, revision..."></textarea></label>
+      <div class="button-row right"><button type="button" class="btn danger" id="delete-slot-btn">Delete</button><button type="button" class="btn ghost" data-close="slot-modal">Cancel</button><button class="btn primary" type="submit">Save slot</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="question-modal" class="modal">
+    <form method="dialog" class="modal-card" id="question-form">
+      <div class="modal-head"><h3>Add DSA question</h3><button type="button" class="icon-btn" data-close="question-modal">×</button></div>
+      <input type="hidden" id="question-id">
+      <div class="form-grid">
+        <label>Challenge day<input type="number" id="question-day" min="1" max="45" value="1" required></label>
+        <label>Complexity<select id="question-complexity"><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select></label>
+        <label>Status<select id="question-status"><option value="todo">Todo</option><option value="solved">Solved</option></select></label>
+        <label>LeetCode link<input type="url" id="question-link" placeholder="https://leetcode.com/problems/..."></label>
+      </div>
+      <label>Question title<input id="question-title" placeholder="Two Sum" required></label>
+      <label>Pattern / notes<textarea id="question-notes" rows="3" placeholder="Hash map, sliding window, recurrence..."></textarea></label>
+      <div class="button-row right"><button type="button" class="btn ghost" data-close="question-modal">Cancel</button><button class="btn primary" type="submit">Save question</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="finish-modal" class="modal">
+    <form method="dialog" class="modal-card" id="finish-form">
+      <div class="modal-head"><h3>Finish live session</h3><button type="button" class="icon-btn" data-close="finish-modal">×</button></div>
+      <p class="muted" id="finish-meta"></p>
+      <label>Summary<textarea id="finish-summary" rows="3" placeholder="Few lines: what did you study and what objectives were completed?"></textarea></label>
+      <label>Next target<textarea id="finish-next" rows="2" placeholder="Target for the next day / next session"></textarea></label>
+      <div class="button-row right"><button type="button" class="btn ghost" data-close="finish-modal">Cancel</button><button class="btn primary" type="submit">Save live session</button></div>
+    </form>
+  </dialog>
+
+  <script src="script.js"></script>
+</body>
+</html>
