@@ -15,24 +15,24 @@
       <div class="brand-mark">GO</div>
       <div>
         <h1>GRIND OS</h1>
-        <p>AFCAT · Math · English · DSA</p>
+        <p>SSC CGL · English · Quant · GK</p>
       </div>
     </div>
 
     <nav class="nav" aria-label="Main navigation">
-      <button class="nav-item active" data-page="dashboard"><span class="dot afcat"></span>Dashboard</button>
+      <button class="nav-item active" data-page="dashboard"><span class="dot primary"></span>Dashboard</button>
       <button class="nav-item" data-page="timetable"><span class="dot plan"></span>Live Timetable</button>
       <button class="nav-item" data-page="english"><span class="dot" style="background:#f472b6"></span>English 45 Days</button>
-      <button class="nav-item" data-page="math"><span class="dot" style="background:#34d399"></span>Math Topics</button>
+      <button class="nav-item" data-page="math"><span class="dot" style="background:#34d399"></span>Quantitative Aptitude</button>
       <button class="nav-item" data-page="gk"><span class="dot" style="background:#a78bfa"></span>GK · 1.5h Daily</button>
       <button class="nav-item" data-page="reasoning"><span class="dot" style="background:#fb923c"></span>Reasoning · 1h Daily</button>
-      <button class="nav-item" data-page="dsa"><span class="dot dsa"></span>DSA 45 Days</button>
+      <button class="nav-item" data-page="ck"><span class="dot ck"></span>Computer Knowledge</button>
       <button class="nav-item" data-page="analytics"><span class="dot tech"></span>Analytics</button>
       <button class="manual-log-link" onclick="openSession()">Manual Log</button>
     </nav>
 
     <section class="countdown-card">
-      <span class="label">AFCAT target</span>
+      <span class="label">SSC CGL target</span>
       <strong id="days-left">—</strong>
       <span>days until Aug 9, 2026</span>
     </section>
@@ -40,7 +40,7 @@
     <section class="side-progress">
       <div class="progress-row"><span>English</span><b id="side-english">0/45</b></div>
       <div class="bar"><span id="bar-english"></span></div>
-      <div class="progress-row"><span>Math</span><b id="side-math">0/21</b></div>
+      <div class="progress-row"><span>Quant</span><b id="side-math">0/20</b></div>
       <div class="bar"><span id="bar-math"></span></div>
       <div class="progress-row"><span>Today</span><b id="side-today">0h</b></div>
       <div class="bar"><span id="bar-today"></span></div>
@@ -101,8 +101,7 @@
 
       <div class="stat-grid">
         <article class="stat"><span>English days done</span><strong id="stat-english">0/45</strong></article>
-        <article class="stat"><span>Math topics done</span><strong id="stat-math">0/21</strong></article>
-        <article class="stat"><span>DSA days complete</span><strong id="stat-dsa">0/45</strong></article>
+        <article class="stat"><span>Quant topics done</span><strong id="stat-math">0/20</strong></article>
         <article class="stat"><span>Total study time</span><strong id="stat-hours">0h</strong></article>
       </div>
 
@@ -126,32 +125,21 @@
       <div id="timetable-list" class="timeline"></div>
     </section>
 
-
-    <section class="page" id="page-dsa">
-      <div class="section-head"><div><h3>DSA 45-day challenge</h3><p>Days start empty by design. Add questions only when your instructor releases them.</p></div><button class="btn primary" id="add-question-btn">+ Add DSA question</button></div>
-      <div class="stat-grid dsa-stats">
-        <article class="stat"><span>Challenge progress</span><strong id="dsa-progress">0/45</strong></article>
-        <article class="stat"><span>Easy / Medium / Hard</span><strong id="dsa-difficulty">0 / 0 / 0</strong></article>
-        <article class="stat"><span>Today solved</span><strong id="dsa-today">0</strong></article>
-      </div>
-      <div id="dsa-days" class="dsa-days"></div>
-    </section>
-
     <section class="page" id="page-english">
       <div class="section-head"><div><h3>English 45-day challenge</h3><p>Follow the daily Aman Vashist video roadmap. All days stay unlocked so you can jump ahead or revise anytime.</p></div></div>
-      <div class="stat-grid dsa-stats">
+      <div class="stat-grid mini-stats">
         <article class="stat"><span>Days complete</span><strong id="english-progress">0/45</strong></article>
         <article class="stat"><span>Videos watched</span><strong id="english-videos">0</strong></article>
         <article class="stat"><span>Today completed</span><strong id="english-today">0</strong></article>
       </div>
       <div id="english-next" class="english-next"></div>
-      <div id="english-days" class="dsa-days"></div>
+      <div id="english-days" class="day-grid"></div>
     </section>
 
     <section class="page" id="page-math">
-      <div class="section-head"><div><h3>Math Topics</h3><p>Topic-level AFCAT math tracker grouped by subject, with recommended session time by difficulty.</p></div></div>
-      <div class="stat-grid dsa-stats">
-        <article class="stat"><span>Topics complete</span><strong id="math-progress">0/21</strong></article>
+      <div class="section-head"><div><h3>Quantitative Aptitude</h3><p>SSC CGL Quant syllabus grouped by subject, with recommended session time by difficulty.</p></div></div>
+      <div class="stat-grid mini-stats">
+        <article class="stat"><span>Topics complete</span><strong id="math-progress">0/20</strong></article>
         <article class="stat"><span>Sessions logged</span><strong id="math-sessions">0</strong></article>
         <article class="stat"><span>Today's sessions</span><strong id="math-today">0</strong></article>
       </div>
@@ -159,15 +147,19 @@
     </section>
 
     <section class="page" id="page-gk">
-      <div class="section-head">
-        <div><h3>General Knowledge</h3><p>Target: 1.5 hours daily · Content coming soon</p></div>
+      <div class="section-head"><div><h3>General Awareness</h3><p>Target: 1.5 hours daily · Log sessions or tick off a topic once you've covered it.</p></div></div>
+      <div class="stat-grid mini-stats">
+        <article class="stat"><span>Topics complete</span><strong id="gk-progress">0/7</strong></article>
       </div>
-      <article class="panel" style="text-align:center; padding: 60px 20px;">
-        <span style="font-size: 3rem">📚</span>
-        <h3 style="margin-top: 16px">GK content will be added here</h3>
-        <p>Topics: History · Geography · Polity · Economy · Science · Defence · Current Affairs · Static GK</p>
-        <p style="margin-top: 12px; color: var(--text-dim)">Daily target: 90 min. Use the timer to log sessions now.</p>
-      </article>
+      <div id="gk-grid" class="topic-grid"></div>
+    </section>
+
+    <section class="page" id="page-ck">
+      <div class="section-head"><div><h3>Computer Knowledge</h3><p>Tier 2 only · Target: 30 minutes daily · Log sessions or tick off a topic once you've covered it.</p></div></div>
+      <div class="stat-grid mini-stats">
+        <article class="stat"><span>Topics complete</span><strong id="ck-progress">0/4</strong></article>
+      </div>
+      <div id="ck-grid" class="topic-grid"></div>
     </section>
 
     <section class="page" id="page-reasoning">
@@ -194,7 +186,6 @@
       </article>
       <div class="analytics-grid">
         <article class="panel"><h3>Daily consistency</h3><div class="chart" id="consistency-chart"></div></article>
-        <article class="panel"><h3>DSA LeetCode mix</h3><div class="chart" id="dsa-chart"></div></article>
         <article class="panel"><h3>Math progress</h3><div class="chart" id="math-chart"></div></article>
         <article class="panel"><h3>Daily time split</h3><div class="chart" id="daily-split-chart"></div></article>
         <article class="panel advisor"><h3>Study advisor</h3><div id="advisor-text"></div></article>
@@ -232,22 +223,6 @@
       <label>Title<input id="slot-name" placeholder="English — grammar practice" required></label>
       <label>Plan notes<textarea id="slot-desc" rows="3" placeholder="PYQs, notes, mock, revision..."></textarea></label>
       <div class="button-row right"><button type="button" class="btn danger" id="delete-slot-btn">Delete</button><button type="button" class="btn ghost" data-close="slot-modal">Cancel</button><button class="btn primary" type="submit">Save slot</button></div>
-    </form>
-  </dialog>
-
-  <dialog id="question-modal" class="modal">
-    <form method="dialog" class="modal-card" id="question-form">
-      <div class="modal-head"><h3>Add DSA question</h3><button type="button" class="icon-btn" data-close="question-modal">×</button></div>
-      <input type="hidden" id="question-id">
-      <div class="form-grid">
-        <label>Challenge day<input type="number" id="question-day" min="1" max="45" value="1" required></label>
-        <label>Complexity<select id="question-complexity"><option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option></select></label>
-        <label>Status<select id="question-status"><option value="todo">Todo</option><option value="solved">Solved</option></select></label>
-        <label>LeetCode link<input type="url" id="question-link" placeholder="https://leetcode.com/problems/..."></label>
-      </div>
-      <label>Question title<input id="question-title" placeholder="Two Sum" required></label>
-      <label>Pattern / notes<textarea id="question-notes" rows="3" placeholder="Hash map, sliding window, recurrence..."></textarea></label>
-      <div class="button-row right"><button type="button" class="btn ghost" data-close="question-modal">Cancel</button><button class="btn primary" type="submit">Save question</button></div>
     </form>
   </dialog>
 

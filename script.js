@@ -2,32 +2,52 @@ const EXAM_DATE = new Date('2026-08-09T00:00:00');
 const DAILY_TARGET = 720;
 const STORAGE_KEY = 'grind_os_personal_v1';
 
+// Quantitative Aptitude syllabus, sourced from the shared SSC CGL topic
+// taxonomy (see seedTopics.js in the MERN backend). Grouped by subject and
+// re-tagged with difficulty/session-time so the existing Math page UI
+// (grouping, recommended session length, progress tracking) keeps working
+// unchanged — only the topic names/grouping actually changed.
 const mathTopics = [
-  { id: 'm01', title: 'Decimal Fraction', subject: 'Arithmetic', difficulty: 'easy', sessionMinutes: 5, notes: 'Basic decimal operations and conversions' },
-  { id: 'm02', title: 'Simplification', subject: 'Arithmetic', difficulty: 'easy', sessionMinutes: 5, notes: 'BODMAS and simplification rules' },
-  { id: 'm03', title: 'Number System & Number Series', subject: 'Arithmetic', difficulty: 'medium', sessionMinutes: 15, notes: 'Types of numbers, divisibility, number series patterns' },
-  { id: 'm04', title: 'HCF & LCM', subject: 'Arithmetic', difficulty: 'easy', sessionMinutes: 5, notes: 'Prime factorisation, Euclidean algorithm' },
-  { id: 'm05', title: 'Square & Square Root / Cube & Cube Roots', subject: 'Arithmetic', difficulty: 'easy', sessionMinutes: 5, notes: 'Perfect squares/cubes up to standard ranges' },
-  { id: 'm06', title: 'Exponents and Powers', subject: 'Arithmetic', difficulty: 'easy', sessionMinutes: 5, notes: 'Laws of exponents, surds' },
-  { id: 'm07', title: 'Percentage', subject: 'Commercial Math', difficulty: 'easy', sessionMinutes: 5, notes: 'Percentage change, successive percentage' },
-  { id: 'm08', title: 'Average', subject: 'Commercial Math', difficulty: 'easy', sessionMinutes: 5, notes: 'Weighted average, average speed' },
-  { id: 'm09', title: 'Profit and Loss', subject: 'Commercial Math', difficulty: 'medium', sessionMinutes: 15, notes: 'CP/SP, discount, marked price, dishonest dealing' },
-  { id: 'm10', title: 'Ratio and Proportion', subject: 'Commercial Math', difficulty: 'medium', sessionMinutes: 15, notes: 'Direct/indirect proportion, partnership' },
-  { id: 'm11', title: 'Simple and Compound Interest', subject: 'Commercial Math', difficulty: 'medium', sessionMinutes: 15, notes: 'SI/CI formulas, difference between SI and CI' },
-  { id: 'm12', title: 'Mixture and Allegation Rules', subject: 'Commercial Math', difficulty: 'hard', sessionMinutes: 30, notes: 'Alligation cross method, successive mixing' },
-  { id: 'm13', title: 'Time and Work', subject: 'Time & Motion', difficulty: 'medium', sessionMinutes: 15, notes: 'Work efficiency, pipes and cisterns' },
-  { id: 'm14', title: 'Time, Distance and Speed', subject: 'Time & Motion', difficulty: 'medium', sessionMinutes: 15, notes: 'Relative speed, average speed, conversion' },
-  { id: 'm15', title: 'Trains / Boats & Streams', subject: 'Time & Motion', difficulty: 'hard', sessionMinutes: 30, notes: 'Crossing problems, upstream/downstream' },
-  { id: 'm16', title: 'Races', subject: 'Time & Motion', difficulty: 'medium', sessionMinutes: 15, notes: 'Head start, dead heat' },
-  { id: 'm17', title: 'Area and Perimeter', subject: 'Geometry', difficulty: 'medium', sessionMinutes: 15, notes: 'Standard 2D shapes formulas' },
-  { id: 'm18', title: 'Elementary Mensuration', subject: 'Geometry', difficulty: 'hard', sessionMinutes: 30, notes: '3D shapes — volume, surface area of cube, cuboid, cylinder, sphere, cone' },
-  { id: 'm19', title: 'Heights and Distance', subject: 'Geometry', difficulty: 'hard', sessionMinutes: 30, notes: 'Trigonometric ratios applied to angles of elevation/depression' },
-  { id: 'm20', title: 'Probability', subject: 'Statistics', difficulty: 'hard', sessionMinutes: 30, notes: 'Basic probability, events, P(A or B), P(A and B)' },
-  { id: 'm21', title: 'Statistics — Mean, Median, Mode', subject: 'Statistics', difficulty: 'medium', sessionMinutes: 15, notes: 'Central tendency for grouped/ungrouped data' },
+  { id: 'q01', title: 'Number System', subject: 'Arithmetic', difficulty: 'easy', sessionMinutes: 5, notes: 'Types of numbers, divisibility rules, remainders' },
+  { id: 'q02', title: 'LCM & HCF', subject: 'Arithmetic', difficulty: 'easy', sessionMinutes: 5, notes: 'Prime factorisation, Euclidean algorithm' },
+  { id: 'q03', title: 'Surds & Indices', subject: 'Arithmetic', difficulty: 'easy', sessionMinutes: 5, notes: 'Laws of exponents, simplifying surds' },
+  { id: 'q04', title: 'Algebraic Identities', subject: 'Arithmetic', difficulty: 'medium', sessionMinutes: 15, notes: 'Standard identities, factorisation, algebraic manipulation' },
+  { id: 'q05', title: 'Percentage', subject: 'Commercial Math', difficulty: 'easy', sessionMinutes: 5, notes: 'Percentage change, successive percentage' },
+  { id: 'q06', title: 'Profit & Loss', subject: 'Commercial Math', difficulty: 'medium', sessionMinutes: 15, notes: 'CP/SP, discount, marked price, dishonest dealing' },
+  { id: 'q07', title: 'Simple & Compound Interest', subject: 'Commercial Math', difficulty: 'medium', sessionMinutes: 15, notes: 'SI/CI formulas, difference between SI and CI' },
+  { id: 'q08', title: 'Average', subject: 'Commercial Math', difficulty: 'easy', sessionMinutes: 5, notes: 'Weighted average, average speed' },
+  { id: 'q09', title: 'Ratio & Proportion', subject: 'Commercial Math', difficulty: 'medium', sessionMinutes: 15, notes: 'Direct/indirect proportion, combining ratios' },
+  { id: 'q10', title: 'Partnership', subject: 'Commercial Math', difficulty: 'medium', sessionMinutes: 15, notes: 'Profit sharing by capital and time invested' },
+  { id: 'q11', title: 'Problems on Ages', subject: 'Time & Work', difficulty: 'easy', sessionMinutes: 5, notes: 'Linear equations framed around age ratios' },
+  { id: 'q12', title: 'Time & Work', subject: 'Time & Work', difficulty: 'medium', sessionMinutes: 15, notes: 'Work efficiency, combined work, work-wages' },
+  { id: 'q13', title: 'Pipes & Cisterns', subject: 'Time & Work', difficulty: 'medium', sessionMinutes: 15, notes: 'Inlet/outlet rates, combined filling/emptying' },
+  { id: 'q14', title: 'Mixture & Alligation', subject: 'Time & Work', difficulty: 'hard', sessionMinutes: 30, notes: 'Alligation cross method, successive mixing' },
+  { id: 'q15', title: 'Time, Speed & Distance', subject: 'Time & Work', difficulty: 'medium', sessionMinutes: 15, notes: 'Relative speed, trains, boats & streams, races' },
+  { id: 'q16', title: 'Mensuration', subject: 'Geometry & Data', difficulty: 'hard', sessionMinutes: 30, notes: '2D/3D shapes — area, perimeter, volume, surface area' },
+  { id: 'q17', title: 'Geometry & Coordinate Geometry', subject: 'Geometry & Data', difficulty: 'hard', sessionMinutes: 30, notes: 'Lines, triangles, circles; distance/section formula' },
+  { id: 'q18', title: 'Trigonometry & Heights and Distances', subject: 'Geometry & Data', difficulty: 'hard', sessionMinutes: 30, notes: 'Trig ratios, angles of elevation/depression' },
+  { id: 'q19', title: 'Data Interpretation', subject: 'Geometry & Data', difficulty: 'medium', sessionMinutes: 15, notes: 'Tables, bar/pie/line graphs, caselets' },
+  { id: 'q20', title: 'Statistics & Probability', subject: 'Geometry & Data', difficulty: 'hard', sessionMinutes: 30, notes: 'Mean/median/mode, basic probability — Tier 2 only' },
 ];
 
-const afcatSubjects = ['English', 'Math', 'GK', 'Reasoning', 'General'];
-const gkTopics = ['History', 'Geography', 'Polity', 'Economy', 'Science', 'Defence', 'Current Affairs', 'Static GK'];
+// General Awareness and Computer Knowledge are simple flat checklists (no
+// difficulty/session metadata) — see toggleChecklistTopic/renderChecklistPage.
+// Each topic needs a stable id so completion state survives a title tweak.
+const gkTopics = [
+  { id: 'ga01', title: 'History' },
+  { id: 'ga02', title: 'Geography' },
+  { id: 'ga03', title: 'Polity' },
+  { id: 'ga04', title: 'Economy' },
+  { id: 'ga05', title: 'Science' },
+  { id: 'ga06', title: 'Static GK' },
+  { id: 'ga07', title: 'Current Affairs' },
+];
+const ckTopics = [
+  { id: 'ck01', title: 'Hardware & CPU Basics' },
+  { id: 'ck02', title: 'Operating Systems & MS Office' },
+  { id: 'ck03', title: 'Internet, Email & E-banking' },
+  { id: 'ck04', title: 'Networking & Cybersecurity Basics' },
+];
 const reasoningTopics = ['Verbal Reasoning', 'Non-Verbal Reasoning', 'Series', 'Analogy', 'Coding-Decoding', 'Blood Relations', 'Venn Diagrams'];
 
 const englishDays = [
@@ -244,14 +264,10 @@ const englishDays = [
   ]}
 ];
 
-const defaultSlots = [
-  slot('12:00–1:30 PM', 'english', 'English', 'English 45-day roadmap', 'English', '90 min focused English study'),
-  slot('2:00–3:00 PM', 'math', 'Arithmetic', 'Simplification', 'Math', '60 min formula practice and problem drills'),
-  slot('4:00–5:30 PM', 'gk', 'General Knowledge', 'Current Affairs', 'GK', '90 min notes, recall, and current affairs'),
-  slot('7:00–8:00 PM', 'reasoning', 'Reasoning', 'Verbal Reasoning', 'Reasoning', '60 min reasoning and military aptitude drills'),
-  slot('9:00–10:30 PM', 'dsa', '45-day challenge', 'Day 1', 'DSA', '90 min released problems and revision'),
-  slot('11:00 PM–12:30 AM', 'tech', 'Web Dev', 'React practice', 'Web Dev', '90 min web development practice'),
-];
+// Timetable starts empty by design — the user builds their own schedule
+// via the "+ Add slot" UI on the Timetable page (see openSlot/saveSlot below).
+// Nothing here is pre-seeded.
+const defaultSlots = [];
 
 function slot(time, domain, subject, topic, name, desc) {
   return { id: globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : `${Date.now()}-${Math.random()}`, time, domain, subject, topic, name, desc };
@@ -262,7 +278,7 @@ function todayKey(d = new Date()) {
 }
 
 function loadState() {
-  const defaults = { sessions: [], questions: [], englishDays: [], mathSessions: [], mathDone: [], timetable: structuredClone(defaultSlots), timer: null };
+  const defaults = { sessions: [], englishDays: [], mathSessions: [], mathDone: [], checklistDone: [], timetable: structuredClone(defaultSlots), timer: null };
   try {
     const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
     return normalizeState({ ...defaults, ...stored });
@@ -273,10 +289,10 @@ function loadState() {
 
 function normalizeState(nextState) {
   nextState.sessions = Array.isArray(nextState.sessions) ? nextState.sessions : [];
-  nextState.questions = Array.isArray(nextState.questions) ? nextState.questions : [];
   nextState.englishDays = Array.isArray(nextState.englishDays) ? nextState.englishDays : [];
   nextState.mathSessions = Array.isArray(nextState.mathSessions) ? nextState.mathSessions : [];
   nextState.mathDone = Array.isArray(nextState.mathDone) ? nextState.mathDone.map((item) => typeof item === 'string' ? { topicId: item, completedDate: todayKey() } : item).filter((item) => item?.topicId) : [];
+  nextState.checklistDone = Array.isArray(nextState.checklistDone) ? nextState.checklistDone.filter((item) => item?.domain && item?.topicId) : [];
   if (nextState.timetable && !Array.isArray(nextState.timetable) && Array.isArray(nextState.timetable.class)) nextState.timetable = nextState.timetable.class;
   if (!Array.isArray(nextState.timetable)) nextState.timetable = structuredClone(defaultSlots);
   delete nextState.mode;
@@ -290,30 +306,28 @@ let timerInterval = null;
 const $ = (id) => document.getElementById(id);
 const esc = (value = '') => String(value).replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[ch]));
 const mins = (n = 0) => `${Math.floor(n / 60)}h ${n % 60}m`;
-const domainLabel = { afcat: 'AFCAT', dsa: 'DSA', english: 'English', math: 'Math', gk: 'GK', reasoning: 'Reasoning', tech: 'Tech', break: 'Break' };
+const domainLabel = { english: 'English', math: 'Quant', gk: 'GK', reasoning: 'Reasoning', ck: 'Comp. Knowledge', tech: 'Tech', break: 'Break' };
 
 function save() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
 function topicOptions(domain, subject = '') {
-  if (domain === 'afcat') return [{ value: 'Manual AFCAT session', label: 'Manual AFCAT session' }];
   if (domain === 'english') return englishDays.map((x) => ({ value: `Day ${x.day} — ${x.title}`, label: `Day ${x.day} — ${x.title}` }));
   if (domain === 'math') return mathTopics.map((x) => ({ value: x.title, label: x.title }));
-  if (domain === 'gk') return gkTopics.map((x) => ({ value: x, label: x }));
+  if (domain === 'gk') return gkTopics.map((x) => ({ value: x.title, label: x.title }));
   if (domain === 'reasoning') return reasoningTopics.map((x) => ({ value: x, label: x }));
-  if (domain === 'dsa') return Array.from({ length: 45 }, (_, i) => ({ value: `Day ${i + 1}`, label: `Day ${i + 1}${questionsForDay(i + 1).length ? ` (${questionsForDay(i + 1).length} questions)` : ' · empty slot'}` }));
+  if (domain === 'ck') return ckTopics.map((x) => ({ value: x.title, label: x.title }));
   if (domain === 'tech') return ['React practice', 'Internshala class', 'Next.js', 'Project build', 'Revision'].map((x) => ({ value: x, label: x }));
   return [{ value: 'Break', label: 'Break' }];
 }
 
 function subjectOptions(domain) {
-  if (domain === 'afcat') return afcatSubjects.map((x) => ({ value: x, label: x }));
   if (domain === 'english') return [{ value: 'English', label: 'English' }];
   if (domain === 'math') return [...new Set(mathTopics.map((x) => x.subject))].map((x) => ({ value: x, label: x }));
-  if (domain === 'gk') return [{ value: 'General Knowledge', label: 'General Knowledge' }];
+  if (domain === 'gk') return [{ value: 'General Awareness', label: 'General Awareness' }];
   if (domain === 'reasoning') return [{ value: 'Reasoning', label: 'Reasoning & Military Aptitude' }];
-  if (domain === 'dsa') return [{ value: '45-day challenge', label: '45-day challenge' }];
+  if (domain === 'ck') return [{ value: 'Computer Knowledge', label: 'Computer Knowledge' }];
   if (domain === 'tech') return [{ value: 'Web Dev', label: 'Web Dev' }, { value: 'React', label: 'React' }];
   return [{ value: 'Break', label: 'Break' }];
 }
@@ -335,7 +349,7 @@ function wireDomainControls(prefix) {
   domain.addEventListener('change', refreshSubject);
   subject.addEventListener('change', refreshTopic);
   fillSelect(domain, [
-    { value: 'afcat', label: 'AFCAT' }, { value: 'english', label: 'English' }, { value: 'math', label: 'Math' }, { value: 'gk', label: 'GK' }, { value: 'reasoning', label: 'Reasoning' }, { value: 'dsa', label: 'DSA' }, { value: 'tech', label: 'Tech / React' }, { value: 'break', label: 'Break' },
+    { value: 'english', label: 'English' }, { value: 'math', label: 'Quant' }, { value: 'gk', label: 'GK' }, { value: 'reasoning', label: 'Reasoning' }, { value: 'ck', label: 'Comp. Knowledge' }, { value: 'tech', label: 'Tech / React' }, { value: 'break', label: 'Break' },
   ], domain.value || 'english');
   refreshSubject();
 }
@@ -345,18 +359,6 @@ function sessionsOn(date = todayKey()) {
 }
 function minutesFor(date, domain) {
   return state.sessions.filter((s) => s.date === date && (!domain || s.domain === domain)).reduce((a, s) => a + Number(s.minutes || 0), 0);
-}
-function questionsForDay(day) {
-  return state.questions.filter((q) => Number(q.day) === Number(day));
-}
-function solvedQuestions() {
-  return state.questions.filter((q) => q.status === 'solved');
-}
-function completedDsaDays() {
-  return Array.from({ length: 45 }, (_, i) => i + 1).filter((day) => {
-    const qs = questionsForDay(day);
-    return qs.length > 0 && qs.every((q) => q.status === 'solved');
-  }).length;
 }
 function completedEnglishDays() {
   return state.englishDays.length;
@@ -388,12 +390,12 @@ function setPage(page) {
   activePage = page;
   document.querySelectorAll('.page').forEach((p) => p.classList.toggle('active', p.id === `page-${page}`));
   document.querySelectorAll('.nav-item').forEach((n) => n.classList.toggle('active', n.dataset.page === page));
-  $('page-title').textContent = { dashboard: 'Dashboard', timetable: 'Live Timetable', dsa: 'DSA 45 Days', english: 'English 45 Days', math: 'Math Topics', gk: 'General Knowledge', reasoning: 'Reasoning & Military Aptitude', analytics: 'Analytics' }[page];
+  $('page-title').textContent = { dashboard: 'Dashboard', timetable: 'Live Timetable', english: 'English 45 Days', math: 'Quantitative Aptitude', gk: 'General Awareness', reasoning: 'Reasoning & Military Aptitude', ck: 'Computer Knowledge', analytics: 'Analytics' }[page];
   render();
 }
 
 function render() {
-  renderChrome(); renderDashboard(); renderTimetable(); renderDsa(); renderEnglish(); renderMath(); renderGk(); renderReasoning(); renderAnalytics(); renderTimer();
+  renderChrome(); renderDashboard(); renderTimetable(); renderEnglish(); renderMath(); renderGk(); renderCk(); renderReasoning(); renderAnalytics(); renderTimer();
 }
 
 function renderChrome() {
@@ -414,14 +416,13 @@ function renderDashboard() {
   $('focus-detail').textContent = next ? `${next.time} · ${domainLabel[next.domain]} · ${next.subject || 'custom'} · ${next.topic || 'open work'}` : 'Add a slot and start tracking.';
   $('stat-english').textContent = `${completedEnglishDays()}/${englishDays.length}`;
   $('stat-math').textContent = `${completedMathTopics()}/${mathTopics.length}`;
-  $('stat-dsa').textContent = `${completedDsaDays()}/45`;
   $('stat-hours').textContent = mins(state.sessions.reduce((a, s) => a + Number(s.minutes || 0), 0));
   const todayMins = minutesFor(todayKey());
   const pct = Math.min(100, Math.round((todayMins / DAILY_TARGET) * 100));
   $('daily-ring').style.setProperty('--pct', `${pct}%`);
   $('daily-percent').textContent = `${pct}%`;
   $('today-total').textContent = mins(todayMins);
-  $('today-split').innerHTML = ['english', 'math', 'gk', 'reasoning', 'dsa', 'tech'].map((d) => `<span>${domainLabel[d]} · ${mins(minutesFor(todayKey(), d))}</span>`).join('');
+  $('today-split').innerHTML = ['english', 'math', 'gk', 'reasoning', 'ck', 'tech'].map((d) => `<span>${domainLabel[d]} · ${mins(minutesFor(todayKey(), d))}</span>`).join('');
   $('today-plan').innerHTML = todaysPlan.length ? todaysPlan.map(renderPlanItem).join('') : '<div class="empty">No slots yet. Add your first timetable slot.</div>';
   const recent = [...state.sessions].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || '')).slice(0, 5);
   $('session-log').innerHTML = recent.length ? recent.map(renderSession).join('') : '<div class="empty">No sessions logged yet.</div>';
@@ -433,7 +434,7 @@ function renderPlanItem(s) {
 }
 
 function renderSession(s) {
-  return `<div class="question session-card"><span class="badge ${s.domain}">${domainLabel[s.domain] || s.domain}</span><div><h4>${esc(s.topic || s.subject)}</h4><p>${esc(s.date)} · ${mins(Number(s.minutes || 0))} · ${esc(s.summary || 'No summary')}</p>${s.next ? `<p>Next: ${esc(s.next)}</p>` : ''}</div></div>`;
+  return `<div class="entry-row session-card"><span class="badge ${s.domain}">${domainLabel[s.domain] || s.domain}</span><div><h4>${esc(s.topic || s.subject)}</h4><p>${esc(s.date)} · ${mins(Number(s.minutes || 0))} · ${esc(s.summary || 'No summary')}</p>${s.next ? `<p>Next: ${esc(s.next)}</p>` : ''}</div></div>`;
 }
 
 function renderHeatmap(id, days) {
@@ -451,19 +452,6 @@ function renderTimetable() {
   $('timetable-list').innerHTML = (state.timetable || []).map(renderPlanItem).join('') || '<div class="empty">No slots yet.</div>';
 }
 
-
-function renderDsa() {
-  const easy = solvedQuestions().filter((q) => q.complexity === 'easy').length;
-  const medium = solvedQuestions().filter((q) => q.complexity === 'medium').length;
-  const hard = solvedQuestions().filter((q) => q.complexity === 'hard').length;
-  $('dsa-progress').textContent = `${completedDsaDays()}/45`;
-  $('dsa-difficulty').textContent = `${easy} / ${medium} / ${hard}`;
-  $('dsa-today').textContent = solvedQuestions().filter((q) => q.solvedDate === todayKey()).length;
-  $('dsa-days').innerHTML = Array.from({ length: 45 }, (_, i) => i + 1).map((day) => {
-    const qs = questionsForDay(day);
-    return `<article class="dsa-day"><div class="topic-meta"><h4>Day ${day}</h4><button class="btn small ghost" onclick="openQuestion(${day})">+ Question</button></div>${qs.length ? qs.map(renderQuestion).join('') : '<p>Empty slot. Add questions when your instructor releases today’s list.</p>'}</article>`;
-  }).join('');
-}
 
 function renderEnglish() {
   const completed = new Set(state.englishDays.map((d) => Number(d.day)));
@@ -483,7 +471,7 @@ function renderEnglish() {
   $('english-days').innerHTML = englishDays.map((item) => {
     const done = completed.has(item.day);
     const videos = item.videos.map((video) => `<a class="video-link" href="${youtubeSearchUrl(video.search)}" target="_blank" rel="noreferrer">▶ ${esc(video.title)}</a>`).join('');
-    return `<article class="dsa-day ${done ? 'done' : ''}" id="english-day-${item.day}">
+    return `<article class="day-card ${done ? 'done' : ''}" id="english-day-${item.day}">
       <div class="topic-meta"><h4>Day ${item.day}</h4><span>${done ? '✓ Complete' : `${item.videos.length} video${item.videos.length === 1 ? '' : 's'}`}</span></div>
       <p>${esc(item.title)}</p>
       <div class="video-list">${videos}</div>
@@ -515,7 +503,23 @@ function renderMath() {
   }).join('');
 }
 
-function renderGk() {}
+// GK and Computer Knowledge share the same "flat checklist" shape, so one
+// renderer handles both — add a new checklist page by calling this with a
+// new domain/topics/element-id set, no new render logic needed.
+function renderChecklistPage(domain, topics, progressId, gridId) {
+  const doneIds = new Set(state.checklistDone.filter((item) => item.domain === domain).map((item) => item.topicId));
+  $(progressId).textContent = `${doneIds.size}/${topics.length}`;
+  $(gridId).innerHTML = topics.map((topic) => {
+    const done = doneIds.has(topic.id);
+    const subject = subjectOptions(domain)[0]?.value || '';
+    return `<article class="topic-card ${done ? 'done' : ''}">
+      <h4>${esc(topic.title)}</h4>
+      <div class="button-row"><button class="btn small primary" onclick="openSession('${domain}','${esc(subject)}','${esc(topic.title)}',60)">Log session</button><button class="btn small ${done ? 'success' : 'ghost'}" onclick="toggleChecklistTopic('${domain}','${topic.id}')">${done ? 'Complete ✓' : 'Mark complete ✓'}</button></div>
+    </article>`;
+  }).join('');
+}
+function renderGk() { renderChecklistPage('gk', gkTopics, 'gk-progress', 'gk-grid'); }
+function renderCk() { renderChecklistPage('ck', ckTopics, 'ck-progress', 'ck-grid'); }
 function renderReasoning() {}
 
 function doneCountForMathSubject(subject) {
@@ -532,7 +536,6 @@ function renderProgressChart() {
   });
   const series = [
     { key: 'math', label: 'Math', color: 'var(--math)', values: days.map((day) => state.mathDone.filter((item) => item.completedDate && item.completedDate <= day).length) },
-    { key: 'dsa', label: 'DSA', color: 'var(--dsa)', values: days.map((day) => solvedQuestions().filter((q) => q.solvedDate && q.solvedDate <= day).length) },
     { key: 'english', label: 'English', color: '#f472b6', values: days.map((day) => state.englishDays.filter((d) => d.completedDate && d.completedDate <= day).length) },
     { key: 'tech', label: 'Tech', color: 'var(--tech)', values: days.map((day) => state.sessions.filter((s) => s.domain === 'tech' && s.status === 'done' && s.date <= day).length) },
   ];
@@ -557,17 +560,9 @@ function renderProgressChart() {
   </svg>`;
 }
 
-function renderQuestion(q) {
-  const link = q.link ? `<a class="btn small ghost" href="${esc(q.link)}" target="_blank" rel="noreferrer">LC</a>` : '';
-  return `<div class="question"><button class="check" onclick="toggleQuestion('${q.id}')">${q.status === 'solved' ? '✓' : ''}</button><div><strong>${esc(q.title)}</strong><p><span class="diff-${q.complexity}">${esc(q.complexity)}</span> · ${esc(q.notes || 'No notes yet')}</p></div><div class="button-row">${link}<button class="btn small ghost" onclick="editQuestion('${q.id}')">Edit</button></div></div>`;
-}
-
 function renderAnalytics() {
   renderProgressChart();
   renderHeatmap('consistency-chart', 30);
-  const diff = ['easy', 'medium', 'hard'].map((d) => solvedQuestions().filter((q) => q.complexity === d).length);
-  const maxDiff = Math.max(1, ...diff);
-  $('dsa-chart').innerHTML = ['Easy', 'Medium', 'Hard'].map((label, i) => `<div class="bar-col"><span style="height:${20 + (diff[i] / maxDiff) * 170}px;background:${i === 0 ? 'var(--dsa)' : i === 1 ? 'var(--plan)' : 'var(--danger)'}"></span><b>${diff[i]}</b><em>${label}</em></div>`).join('');
   renderMathChart();
   renderDailySplitChart();
   const mathToday = minutesFor(todayKey(), 'math');
@@ -585,7 +580,7 @@ function renderMathChart() {
 }
 
 function renderDailySplitChart() {
-  const targets = { english: 90, math: 60, gk: 90, reasoning: 60, dsa: 90, tech: 90 };
+  const targets = { english: 90, math: 60, gk: 90, reasoning: 60, ck: 30, tech: 90 };
   $('daily-split-chart').innerHTML = `<div class="hbar-wrap">${Object.entries(targets).map(([domain, target]) => {
     const actual = minutesFor(todayKey(), domain);
     return `<div class="hbar"><label><span>${domainLabel[domain]}</span><b>${mins(actual)} / ${mins(target)}</b></label><div><i style="width:${Math.min(100, Math.round((actual / target) * 100))}%;background:var(--${domain === 'english' ? 'english' : domain})"></i></div></div>`;
@@ -670,25 +665,6 @@ function startFromSlot(id) {
   save(); ensureTimerTick(); setPage('dashboard');
 }
 
-function openQuestion(day = 1) {
-  $('question-id').value = ''; $('question-day').value = day; $('question-title').value = ''; $('question-notes').value = ''; $('question-link').value = ''; $('question-status').value = 'todo'; $('question-complexity').value = 'easy'; $('question-modal').showModal();
-}
-function editQuestion(id) {
-  const q = state.questions.find((x) => x.id === id); if (!q) return;
-  $('question-id').value = q.id; $('question-day').value = q.day; $('question-title').value = q.title; $('question-notes').value = q.notes || ''; $('question-link').value = q.link || ''; $('question-status').value = q.status; $('question-complexity').value = q.complexity; $('question-modal').showModal();
-}
-function saveQuestion() {
-  const id = $('question-id').value;
-  const q = { id: id || (globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : `${Date.now()}`), day: Number($('question-day').value), title: $('question-title').value, complexity: $('question-complexity').value, status: $('question-status').value, link: $('question-link').value, notes: $('question-notes').value, solvedDate: $('question-status').value === 'solved' ? todayKey() : '' };
-  const idx = state.questions.findIndex((x) => x.id === id);
-  if (idx >= 0) state.questions[idx] = { ...state.questions[idx], ...q, solvedDate: q.status === 'solved' ? (state.questions[idx].solvedDate || todayKey()) : '' }; else state.questions.push(q);
-  save(); $('question-modal').close(); render();
-}
-function toggleQuestion(id) {
-  const q = state.questions.find((x) => x.id === id); if (!q) return;
-  q.status = q.status === 'solved' ? 'todo' : 'solved'; q.solvedDate = q.status === 'solved' ? todayKey() : '';
-  save(); render();
-}
 function completeEnglishDay(day) {
   const existing = state.englishDays.find((item) => Number(item.day) === Number(day));
   if (existing) {
@@ -723,6 +699,16 @@ function toggleMathDone(topicId) {
   save(); render();
 }
 
+function toggleChecklistTopic(domain, topicId) {
+  const isDone = state.checklistDone.some((item) => item.domain === domain && item.topicId === topicId);
+  if (isDone) {
+    state.checklistDone = state.checklistDone.filter((item) => !(item.domain === domain && item.topicId === topicId));
+  } else {
+    state.checklistDone.push({ domain, topicId, completedDate: todayKey() });
+  }
+  save(); render();
+}
+
 
 function deleteSession(id) { state.sessions = state.sessions.filter((s) => s.id !== id); state.mathSessions = state.mathSessions.filter((s) => s.id !== id); save(); render(); }
 
@@ -746,7 +732,7 @@ function init() {
   document.body.addEventListener('click', (e) => { const jump = e.target.closest('[data-jump]'); if (jump) setPage(jump.dataset.jump); });
   document.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', () => $(b.dataset.close).close()));
   ['timer', 'log', 'slot'].forEach(wireDomainControls);
-  $('add-question-btn').addEventListener('click', () => openQuestion(1)); $('add-slot-btn').addEventListener('click', () => openSlot());
+  $('add-slot-btn').addEventListener('click', () => openSlot());
   $('start-suggested-btn').addEventListener('click', () => {
     const s = (state.timetable || []).find((x) => x.domain !== 'break' && !state.sessions.some((session) => session.date === todayKey() && session.domain === x.domain && session.topic === x.topic));
     if (s) startFromSlot(s.id); else $('focus-detail').textContent = "All today's sessions complete 🎯";
@@ -754,7 +740,6 @@ function init() {
   $('timer-start-btn').addEventListener('click', () => startTimerFromControls('timer')); $('timer-pause-btn').addEventListener('click', pauseTimer); $('timer-finish-btn').addEventListener('click', finishTimer); $('timer-discard-btn').addEventListener('click', discardTimer);
   $('session-form').addEventListener('submit', (e) => { e.preventDefault(); addSession({ date: $('log-date').value, domain: $('log-domain').value, subject: $('log-subject').value, topic: $('log-topic').value, minutes: $('log-minutes').value, status: $('log-status').value, summary: $('log-summary').value, next: $('log-next').value }); $('session-modal').close(); render(); });
   $('slot-form').addEventListener('submit', (e) => { e.preventDefault(); saveSlot(); });
-  $('question-form').addEventListener('submit', (e) => { e.preventDefault(); saveQuestion(); });
   $('finish-form').addEventListener('submit', (e) => { e.preventDefault(); saveFinishedTimer(); });
   $('delete-slot-btn').addEventListener('click', () => { state.timetable = state.timetable.filter((s) => s.id !== $('slot-id').value); save(); $('slot-modal').close(); render(); });
   $('export-btn').addEventListener('click', exportData); $('import-btn').addEventListener('click', () => $('import-file').click()); $('import-file').addEventListener('change', (e) => importData(e.target.files[0]));
