@@ -27,7 +27,9 @@ STUDY_TRACKER_AUTH_SECRET=...
 STUDY_TRACKER_DATA_DIR=/var/data
 ```
 
-For cloud Node hosts, set `HOST=0.0.0.0` and `PORT` to the value required by the platform. Mount a persistent disk at the same path as `STUDY_TRACKER_DATA_DIR` so `state.json`, backups, and the auth secret survive restarts. The bundled seed remains in the app code, so the persistent disk does not need a copy of `seed-schedule.json`. The included `Procfile` and `Dockerfile` use `npm start`.
+On Vercel, the app uses Vercel Blob for persistent cloud storage when `BLOB_READ_WRITE_TOKEN` is connected to the project. The current Vercel project has a private Blob store named `studytrackerpersonal-data`. Local development still uses `data/state.json`.
+
+For other cloud Node hosts, set `HOST=0.0.0.0` and `PORT` to the value required by the platform. Mount a persistent disk at the same path as `STUDY_TRACKER_DATA_DIR` so `state.json` and backups survive restarts. The bundled seed remains in the app code, so the persistent disk does not need a copy of `seed-schedule.json`. The included `Procfile` and `Dockerfile` use `npm start`.
 
 ## Data
 
@@ -35,6 +37,13 @@ Live data is stored in:
 
 ```text
 data/state.json
+```
+
+On Vercel production, live data is stored in private Vercel Blob objects:
+
+```text
+studytracker/state.json
+studytracker/backups/
 ```
 
 The file is pretty-printed JSON so it can be inspected in a text editor. Every learner tick and admin edit writes immediately.

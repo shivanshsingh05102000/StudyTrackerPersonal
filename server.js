@@ -35,8 +35,6 @@ const ACCESS_TOKEN_TTL_SECONDS = 15 * 60;
 const REFRESH_TOKEN_TTL_SECONDS = 30 * 24 * 60 * 60;
 const AUTH_SECRET = process.env.STUDY_TRACKER_AUTH_SECRET || "demo-study-tracker-auth-secret";
 
-ensureState();
-
 const app = express();
 app.use(express.json({ limit: "1mb" }));
 
@@ -160,19 +158,23 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-function rejectStaleMutation(req, res, next) {
+async function rejectStaleMutation(req, res, next) {
   if (req.method === "GET" || req.path === "/login") return next();
-  const clientUpdatedAt = req.headers["x-state-updated-at"];
-  if (!clientUpdatedAt) return next();
-  const state = loadState();
-  if (state.updatedAt !== clientUpdatedAt) {
-    return res.status(409).json({
-      error: "state_changed",
-      message: "The data changed in another tab. Reload before saving again.",
-      updatedAt: state.updatedAt
-    });
+  try {
+    const clientUpdatedAt = req.headers["x-state-updated-at"];
+    if (!clientUpdatedAt) return next();
+    const state = await loadState();
+    if (state.updatedAt !== clientUpdatedAt) {
+      return res.status(409).json({
+        error: "state_changed",
+        message: "The data changed in another tab. Reload before saving again.",
+        updatedAt: state.updatedAt
+      });
+    }
+    next();
+  } catch (error) {
+    res.status(500).json({ error: "storage_error", message: error.message });
   }
-  next();
 }
 
 function snapshot(state) {
@@ -238,26 +240,26 @@ function hydrateDay(state, date) {
   return hydrated;
 }
 
-function mutateLearner(req, res, fn) {
+async function mutateLearner(req, res, fn) {
   try {
-    const state = loadState();
+    const state = await loadState();
     const result = fn(state);
-    saveState(state);
+    await saveState(state);
     sendState(res, state, result);
   } catch (error) {
     res.status(400).json({ error: "bad_request", message: error.message });
   }
 }
 
-function mutateAdmin(req, res, action, fn) {
+async function mutateAdmin(req, res, action, fn) {
   try {
-    const state = loadState();
+    const state = await loadState();
     const before = snapshot(state);
     const result = fn(state);
     const next = result.state || state;
     const after = snapshot(next);
     appendAudit(next, makeAudit(req.session.username, action, result.summary || action, before, after, { diff: result.diff || result.moved || [] }));
-    saveState(next);
+    await saveState(next);
     sendState(res, next, { ok: true, ...result, state: undefined, previewState: undefined });
   } catch (error) {
     res.status(400).json({ error: "bad_request", message: error.message });
@@ -359,63 +361,79 @@ app.get("/api/session", (req, res) => {
   res.json({ username: req.session.username, role: req.session.role });
 });
 
-app.get("/api/state", requireAdmin, (req, res) => {
-  const state = loadState();
-  sendState(res, state, { state });
+app.get("/api/state", requireAdmin, async (req, res) => {
+  try {
+    const state = await loadState();
+    sendState(res, state, { state });
+  } catch (error) {
+    res.status(500).json({ error: "storage_error", message: error.message });
+  }
 });
 
-app.get("/api/day/:date", (req, res) => {
+app.get("/api/day/:date", async (req, res) => {
   try {
-    const state = loadState();
+    const state = await loadState();
     sendState(res, state, { day: hydrateDay(state, req.params.date), config: state.config });
   } catch (error) {
     res.status(404).json({ error: "not_found", message: error.message });
   }
 });
 
-app.get("/api/range", (req, res) => {
-  const state = loadState();
-  const from = req.query.from || state.config.windowStart;
-  const to = req.query.to || state.config.windowEnd;
-  const days = Object.values(state.days)
-    .filter((day) => compareIso(day.date, from) >= 0 && compareIso(day.date, to) <= 0)
-    .sort((a, b) => compareIso(a.date, b.date))
-    .map((day) => hydrateDay(state, day.date));
-  sendState(res, state, { days, config: state.config });
+app.get("/api/range", async (req, res) => {
+  try {
+    const state = await loadState();
+    const from = req.query.from || state.config.windowStart;
+    const to = req.query.to || state.config.windowEnd;
+    const days = Object.values(state.days)
+      .filter((day) => compareIso(day.date, from) >= 0 && compareIso(day.date, to) <= 0)
+      .sort((a, b) => compareIso(a.date, b.date))
+      .map((day) => hydrateDay(state, day.date));
+    sendState(res, state, { days, config: state.config });
+  } catch (error) {
+    res.status(500).json({ error: "storage_error", message: error.message });
+  }
 });
 
-app.get("/api/stats", (req, res) => {
-  const state = loadState();
-  sendState(res, state, { config: state.config });
+app.get("/api/stats", async (req, res) => {
+  try {
+    const state = await loadState();
+    sendState(res, state, { config: state.config });
+  } catch (error) {
+    res.status(500).json({ error: "storage_error", message: error.message });
+  }
 });
 
-app.get("/api/gk", (req, res) => {
-  const state = loadState();
-  const scheduleById = {};
-  Object.keys(state.staticGk || {}).forEach((id) => {
-    scheduleById[id] = [];
-  });
-  Object.values(state.days || {}).forEach((day) => {
-    const block = day.staticGk;
-    if (!block) return;
-    if (block.itemId && scheduleById[block.itemId]) {
-      scheduleById[block.itemId].push({ date: day.date, mode: block.mode });
-    }
-    (block.drillIds || []).forEach((id) => {
-      if (scheduleById[id]) scheduleById[id].push({ date: day.date, mode: block.mode === "rotation" ? "rotation" : "drill" });
+app.get("/api/gk", async (req, res) => {
+  try {
+    const state = await loadState();
+    const scheduleById = {};
+    Object.keys(state.staticGk || {}).forEach((id) => {
+      scheduleById[id] = [];
     });
-  });
-  const items = Object.values(state.staticGk || {})
-    .map((item) => ({
-      ...item,
-      schedule: scheduleById[item.id] || []
-    }))
-    .sort((a, b) => {
-      const confidenceA = a.confidence ?? 0;
-      const confidenceB = b.confidence ?? 0;
-      return confidenceA - confidenceB || String(a.introducedOn || "9999-99-99").localeCompare(String(b.introducedOn || "9999-99-99")) || a.label.localeCompare(b.label);
+    Object.values(state.days || {}).forEach((day) => {
+      const block = day.staticGk;
+      if (!block) return;
+      if (block.itemId && scheduleById[block.itemId]) {
+        scheduleById[block.itemId].push({ date: day.date, mode: block.mode });
+      }
+      (block.drillIds || []).forEach((id) => {
+        if (scheduleById[id]) scheduleById[id].push({ date: day.date, mode: block.mode === "rotation" ? "rotation" : "drill" });
+      });
     });
-  sendState(res, state, { items });
+    const items = Object.values(state.staticGk || {})
+      .map((item) => ({
+        ...item,
+        schedule: scheduleById[item.id] || []
+      }))
+      .sort((a, b) => {
+        const confidenceA = a.confidence ?? 0;
+        const confidenceB = b.confidence ?? 0;
+        return confidenceA - confidenceB || String(a.introducedOn || "9999-99-99").localeCompare(String(b.introducedOn || "9999-99-99")) || a.label.localeCompare(b.label);
+      });
+    sendState(res, state, { items });
+  } catch (error) {
+    res.status(500).json({ error: "storage_error", message: error.message });
+  }
 });
 
 app.patch("/api/topic/:id/resource", (req, res) => {
@@ -531,10 +549,10 @@ app.delete("/api/admin/holiday/:date", requireAdmin, (req, res) => {
   mutateAdmin(req, res, "remove_holiday", (state) => removeHoliday(state, req.params.date));
 });
 
-app.post("/api/admin/rebalance", requireAdmin, (req, res) => {
+app.post("/api/admin/rebalance", requireAdmin, async (req, res) => {
   try {
     const commit = Boolean(req.body.commit);
-    const state = loadState();
+    const state = await loadState();
     const result = rebalance(state, { today: todayIso(), commit });
     if (!commit || !result.feasible) {
       const previewStats = result.previewState ? computeStats(result.previewState) : null;
@@ -548,16 +566,16 @@ app.post("/api/admin/rebalance", requireAdmin, (req, res) => {
     const before = snapshot(state);
     const next = result.state;
     appendAudit(next, makeAudit(req.session.username, "rebalance", result.summary, before, snapshot(next), { diff: result.moved }));
-    saveState(next);
+    await saveState(next);
     sendState(res, next, { ok: true, ...result, state: undefined, previewState: undefined });
   } catch (error) {
     res.status(400).json({ error: "bad_request", message: error.message });
   }
 });
 
-app.post("/api/admin/simulate", requireAdmin, (req, res) => {
+app.post("/api/admin/simulate", requireAdmin, async (req, res) => {
   try {
-    const state = loadState();
+    const state = await loadState();
     const scenario = req.body.scenario;
     const simulated = clone(state);
     if (scenario === "miss_next_5_days") {
@@ -599,9 +617,9 @@ app.patch("/api/admin/config", requireAdmin, (req, res) => {
   });
 });
 
-app.post("/api/admin/undo/:auditId", requireAdmin, (req, res) => {
+app.post("/api/admin/undo/:auditId", requireAdmin, async (req, res) => {
   try {
-    const state = loadState();
+    const state = await loadState();
     const entry = (state.auditLog || []).find((item) => item.id === req.params.auditId);
     if (!entry) throw new Error("Audit entry was not found.");
     if (entry.undone) throw new Error("This audit entry has already been undone.");
@@ -614,25 +632,29 @@ app.post("/api/admin/undo/:auditId", requireAdmin, (req, res) => {
     const original = state.auditLog.find((item) => item.id === entry.id);
     original.undone = true;
     appendAudit(state, makeAudit(req.session.username, "undo", `Undid: ${entry.summary}`, beforeUndo, snapshot(state), { undoOf: entry.id }));
-    saveState(state);
+    await saveState(state);
     sendState(res, state, { ok: true });
   } catch (error) {
     res.status(400).json({ error: "bad_request", message: error.message });
   }
 });
 
-app.get("/api/admin/backups", requireAdmin, (req, res) => {
-  const state = loadState();
-  sendState(res, state, { backups: listBackups() });
+app.get("/api/admin/backups", requireAdmin, async (req, res) => {
+  try {
+    const state = await loadState();
+    sendState(res, state, { backups: await listBackups() });
+  } catch (error) {
+    res.status(500).json({ error: "storage_error", message: error.message });
+  }
 });
 
-app.post("/api/admin/restore", requireAdmin, (req, res) => {
+app.post("/api/admin/restore", requireAdmin, async (req, res) => {
   try {
-    const current = loadState();
+    const current = await loadState();
     const before = snapshot(current);
-    const restored = restoreBackup(req.body.filename);
+    const restored = await restoreBackup(req.body.filename);
     appendAudit(restored, makeAudit(req.session.username, "restore_backup", `Restored ${req.body.filename}`, before, snapshot(restored)));
-    saveState(restored);
+    await saveState(restored);
     sendState(res, restored, { ok: true });
   } catch (error) {
     res.status(400).json({ error: "bad_request", message: error.message });
@@ -643,13 +665,13 @@ app.post("/api/admin/reset-progress", requireAdmin, (req, res) => {
   mutateAdmin(req, res, "reset_progress", resetProgressKeepSchedule);
 });
 
-app.post("/api/admin/reset-all", requireAdmin, (req, res) => {
+app.post("/api/admin/reset-all", requireAdmin, async (req, res) => {
   try {
-    const current = loadState();
+    const current = await loadState();
     const before = snapshot(current);
-    const state = resetAll();
+    const state = await resetAll();
     appendAudit(state, makeAudit(req.session.username, "reset_all", "Reset everything from the seed schedule", before, snapshot(state)));
-    saveState(state);
+    await saveState(state);
     sendState(res, state, { ok: true });
   } catch (error) {
     res.status(400).json({ error: "bad_request", message: error.message });
@@ -672,9 +694,16 @@ app.use(express.static(path.join(__dirname, "public")));
 app.get("/", (_req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 
 if (!process.env.VERCEL) {
-  app.listen(PORT, HOST, () => {
-    console.log(`Study tracker running at http://${HOST}:${PORT}`);
-  });
+  ensureState()
+    .then(() => {
+      app.listen(PORT, HOST, () => {
+        console.log(`Study tracker running at http://${HOST}:${PORT}`);
+      });
+    })
+    .catch((error) => {
+      console.error(`Study tracker failed to start: ${error.message}`);
+      process.exit(1);
+    });
 }
 
 module.exports = app;

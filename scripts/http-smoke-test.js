@@ -1,7 +1,11 @@
 const { spawn } = require("child_process");
+const fs = require("fs");
+const os = require("os");
+const path = require("path");
 
 const PORT = Number(process.env.SMOKE_PORT || 3107);
 const BASE_URL = `http://127.0.0.1:${PORT}`;
+const DATA_DIR = fs.mkdtempSync(path.join(os.tmpdir(), "study-tracker-smoke-"));
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -10,7 +14,7 @@ function assert(condition, message) {
 function startServer() {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, ["server.js"], {
-      env: { ...process.env, PORT: String(PORT) },
+      env: { ...process.env, PORT: String(PORT), STUDY_TRACKER_DATA_DIR: DATA_DIR },
       stdio: ["ignore", "pipe", "pipe"]
     });
     let output = "";
@@ -122,6 +126,19 @@ async function run() {
     assert(gkDay.response.status === 200, "Static GK day API failed.");
     assert(gkDay.json.day.staticGk?.item?.label, "Static GK item label is missing.");
 
+    const firstStudyDay = range.json.days.find((day) => day.topics?.length);
+    const firstTopic = firstStudyDay.topics[0];
+    const firstResource = Object.keys(firstTopic.resources)[0];
+    const resourceSave = await request(`/api/topic/${firstTopic.id}/resource`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: { resource: firstResource, done: true }
+    }, learnerJar);
+    assert(resourceSave.response.status === 200, "Learner resource save failed.");
+    const savedDay = await request(`/api/day/${firstTopic.scheduledDate}`, {}, learnerJar);
+    const savedTopic = savedDay.json.day.topics.find((topic) => topic.id === firstTopic.id);
+    assert(savedTopic.resources[firstResource] === "done", "Learner resource update did not persist across requests.");
+
     const refresh = await request("/api/refresh", { method: "POST" }, learnerJar);
     assert(refresh.response.status === 200, "Refresh token flow failed.");
 
@@ -148,6 +165,7 @@ async function run() {
       auth: "ok",
       refresh: "ok",
       learnerApis: "ok",
+      persistence: "ok",
       adminApis: "ok",
       sundayRevision: "ok",
       staticGk: "ok",
@@ -155,6 +173,7 @@ async function run() {
     }, null, 2));
   } finally {
     child.kill();
+    fs.rmSync(DATA_DIR, { recursive: true, force: true });
   }
 }
 
