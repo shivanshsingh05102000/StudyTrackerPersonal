@@ -166,6 +166,40 @@ input[type="date"] {
   gap: 12px;
 }
 
+.demo-access {
+  display: grid;
+  gap: 10px;
+  border: 1px solid color-mix(in srgb, var(--focus) 24%, var(--rule));
+  border-radius: 8px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--focus) 12%, var(--surface)) 0%, color-mix(in srgb, var(--info) 8%, var(--surface)) 100%);
+  padding: 12px;
+}
+
+.demo-access strong {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.demo-access span {
+  display: block;
+  color: var(--ink-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.demo-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.demo-actions button {
+  border-color: color-mix(in srgb, var(--focus) 35%, var(--rule));
+  background: color-mix(in srgb, var(--focus) 12%, var(--surface-raised));
+}
+
 .field {
   display: grid;
   gap: 4px;

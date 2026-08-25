@@ -14,13 +14,13 @@ Open `http://127.0.0.1:3000`.
 Default accounts are defined at the top of `server.js`:
 
 ```js
-admin / CHANGE_ME_ADMIN
-learner / CHANGE_ME_LEARNER
+admin / admin123
+learner / learner123
 ```
 
-Change those values before using the tracker seriously.
+The login screen also has one-click demo buttons for both accounts.
 
-You can also set deployment-safe credentials with environment variables:
+You can override the demo credentials with environment variables:
 
 ```bash
 STUDY_TRACKER_ADMIN_PASSWORD=...
@@ -79,12 +79,12 @@ The tests cover the required pure algorithms for resource-weighted topic complet
 
 ## Security
 
-This is local accountability software, not a hardened multi-user system. Passwords are not hashed because the code and JSON files are readable on disk by the same machine user.
-For deployment, use the environment variables above instead of the default passwords. The server binds to `127.0.0.1` by default for local safety; set `HOST=0.0.0.0` only on a trusted host.
+This is local accountability software, not a hardened multi-user system. The default accounts are public demo accounts and passwords are not hashed because the code and JSON files are readable on disk by the same machine user.
+For a private deployment, use the environment variables above instead of the demo passwords. The server binds to `127.0.0.1` by default for local safety; set `HOST=0.0.0.0` only on a trusted host.
 
 Login uses httpOnly JWT cookies:
 
 - `study_access`: short-lived access token, 15 minutes.
 - `study_refresh`: refresh token, 30 days.
 
-The server automatically accepts a valid refresh token and issues a new access token, so the browser can stay logged in without storing tokens in JavaScript or `localStorage`. The local signing secret is stored at `data/auth-secret.txt`; deleting it logs everyone out.
+The server automatically accepts a valid refresh token and issues a new access token, so the browser can stay logged in without storing tokens in JavaScript or `localStorage`. Set `STUDY_TRACKER_AUTH_SECRET` for private use; otherwise the app uses a fixed demo signing secret.

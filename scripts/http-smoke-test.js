@@ -95,7 +95,7 @@ async function run() {
     const learnerLogin = await request("/api/login", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: { username: "learner", password: "CHANGE_ME_LEARNER" }
+      body: { username: "learner", password: "learner123" }
     }, learnerJar);
     assert(learnerLogin.response.status === 200, "Learner login failed.");
     assert(learnerLogin.json.role === "learner", "Learner role is wrong.");
@@ -129,7 +129,7 @@ async function run() {
     const adminLogin = await request("/api/login", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: { username: "admin", password: "CHANGE_ME_ADMIN" }
+      body: { username: "admin", password: "admin123" }
     }, adminJar);
     assert(adminLogin.response.status === 200 && adminLogin.json.role === "admin", "Admin login failed.");
 

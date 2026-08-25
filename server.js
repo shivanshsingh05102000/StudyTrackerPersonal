@@ -1,5 +1,4 @@
 const crypto = require("crypto");
-const fs = require("fs");
 const path = require("path");
 const express = require("express");
 const {
@@ -23,20 +22,18 @@ const {
   validateExamDateChange
 } = require("./lib/scheduler");
 const { computeStats } = require("./lib/stats");
-const { DATA_DIR, ensureState, listBackups, loadState, resetAll, restoreBackup, saveState } = require("./lib/store");
+const { ensureState, listBackups, loadState, resetAll, restoreBackup, saveState } = require("./lib/store");
 
-// Change these before using the app seriously on your own machine.
 const ACCOUNTS = {
-  admin: { password: process.env.STUDY_TRACKER_ADMIN_PASSWORD || "CHANGE_ME_ADMIN", role: "admin" },
-  learner: { password: process.env.STUDY_TRACKER_LEARNER_PASSWORD || "CHANGE_ME_LEARNER", role: "learner" }
+  admin: { password: process.env.STUDY_TRACKER_ADMIN_PASSWORD || "admin123", role: "admin" },
+  learner: { password: process.env.STUDY_TRACKER_LEARNER_PASSWORD || "learner123", role: "learner" }
 };
 
 const HOST = process.env.HOST || "127.0.0.1";
 const PORT = Number(process.env.PORT || 3000);
 const ACCESS_TOKEN_TTL_SECONDS = 15 * 60;
 const REFRESH_TOKEN_TTL_SECONDS = 30 * 24 * 60 * 60;
-const AUTH_SECRET_PATH = path.join(DATA_DIR, "auth-secret.txt");
-const AUTH_SECRET = process.env.STUDY_TRACKER_AUTH_SECRET || getOrCreateAuthSecret();
+const AUTH_SECRET = process.env.STUDY_TRACKER_AUTH_SECRET || "demo-study-tracker-auth-secret";
 
 ensureState();
 
@@ -54,16 +51,6 @@ function parseCookies(header) {
         return [decodeURIComponent(part.slice(0, index)), decodeURIComponent(part.slice(index + 1))];
       })
   );
-}
-
-function getOrCreateAuthSecret() {
-  fs.mkdirSync(path.dirname(AUTH_SECRET_PATH), { recursive: true });
-  if (fs.existsSync(AUTH_SECRET_PATH)) {
-    return fs.readFileSync(AUTH_SECRET_PATH, "utf8").trim();
-  }
-  const secret = crypto.randomBytes(32).toString("hex");
-  fs.writeFileSync(AUTH_SECRET_PATH, `${secret}\n`);
-  return secret;
 }
 
 function base64Url(value) {

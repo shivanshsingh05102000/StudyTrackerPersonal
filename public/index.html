@@ -17,6 +17,16 @@
       </div>
       <p>Local accountability plan for Part B preparation.</p>
       <form id="login-form" class="login-form">
+        <div class="demo-access" aria-label="Demo accounts">
+          <div>
+            <strong>Demo access</strong>
+            <span>learner / learner123 · admin / admin123</span>
+          </div>
+          <div class="demo-actions">
+            <button type="button" data-demo-login="learner">Learner</button>
+            <button type="button" data-demo-login="admin">Admin</button>
+          </div>
+        </div>
         <label class="field">
           <span>Username</span>
           <input name="username" autocomplete="username" required>
@@ -40,6 +50,7 @@
       const error = document.querySelector("#login-error");
       const passwordInput = document.querySelector("#password-input");
       const togglePassword = document.querySelector("#toggle-password");
+      const demoButtons = document.querySelectorAll("[data-demo-login]");
 
       togglePassword.addEventListener("click", () => {
         const showing = passwordInput.type === "text";
@@ -49,16 +60,29 @@
         togglePassword.setAttribute("aria-pressed", String(!showing));
       });
 
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
+      async function logIn(body) {
         error.textContent = "";
-        const body = Object.fromEntries(new FormData(form).entries());
         try {
           const session = await request("/api/login", { method: "POST", body, skipAuthRedirect: true });
           location.href = session.role === "admin" ? "/admin.html" : "/learner.html";
         } catch (err) {
           error.textContent = err.message;
         }
+      }
+
+      demoButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const username = button.dataset.demoLogin;
+          const password = username === "admin" ? "admin123" : "learner123";
+          form.elements.username.value = username;
+          passwordInput.value = password;
+          logIn({ username, password });
+        });
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        logIn(Object.fromEntries(new FormData(form).entries()));
       });
     </script>
   </body>
