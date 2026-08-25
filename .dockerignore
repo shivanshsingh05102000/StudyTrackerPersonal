@@ -1,0 +1,6 @@
+node_modules
+npm-debug.log
+.git
+.openai
+data/backups
+data/auth-secret.txt

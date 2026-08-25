@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Study tracker login</title>
+    <link rel="stylesheet" href="/css/tokens.css">
+    <link rel="stylesheet" href="/css/app.css">
+  </head>
+  <body class="login-body">
+    <main class="login-card">
+      <div class="login-top">
+        <h1>Study tracker</h1>
+        <button type="button" class="theme-toggle" data-theme-toggle>
+          <span data-theme-label>Theme</span>
+        </button>
+      </div>
+      <p>Local accountability plan for Part B preparation.</p>
+      <form id="login-form" class="login-form">
+        <label class="field">
+          <span>Username</span>
+          <input name="username" autocomplete="username" required>
+        </label>
+        <label class="field">
+          <span>Password</span>
+          <span class="password-row">
+            <input id="password-input" name="password" type="password" autocomplete="current-password" required>
+            <button id="toggle-password" type="button" aria-label="Show password" aria-pressed="false">Show</button>
+          </span>
+        </label>
+        <button type="submit">Log in</button>
+        <div id="login-error" class="error-line" role="alert"></div>
+      </form>
+    </main>
+    <script type="module">
+      import "/js/theme.js";
+      import { request } from "/js/api.js";
+
+      const form = document.querySelector("#login-form");
+      const error = document.querySelector("#login-error");
+      const passwordInput = document.querySelector("#password-input");
+      const togglePassword = document.querySelector("#toggle-password");
+
+      togglePassword.addEventListener("click", () => {
+        const showing = passwordInput.type === "text";
+        passwordInput.type = showing ? "password" : "text";
+        togglePassword.textContent = showing ? "Show" : "Hide";
+        togglePassword.setAttribute("aria-label", showing ? "Show password" : "Hide password");
+        togglePassword.setAttribute("aria-pressed", String(!showing));
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        error.textContent = "";
+        const body = Object.fromEntries(new FormData(form).entries());
+        try {
+          const session = await request("/api/login", { method: "POST", body, skipAuthRedirect: true });
+          location.href = session.role === "admin" ? "/admin.html" : "/learner.html";
+        } catch (err) {
+          error.textContent = err.message;
+        }
+      });
+    </script>
+  </body>
+</html>

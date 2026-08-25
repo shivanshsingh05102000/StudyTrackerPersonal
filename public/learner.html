@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Learner study tracker</title>
+    <link rel="stylesheet" href="/css/tokens.css">
+    <link rel="stylesheet" href="/css/app.css">
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="brand-row">
+          <p class="brand">Learner</p>
+          <button type="button" class="theme-toggle" data-theme-toggle>
+            <span data-theme-label>Theme</span>
+          </button>
+        </div>
+        <nav class="nav" aria-label="Learner views">
+          <button data-view="today" class="active">Today</button>
+          <button data-view="calendar">Calendar</button>
+          <button data-view="progress">Progress</button>
+        </nav>
+        <button id="logout" class="logout">Log out</button>
+      </aside>
+      <main class="main">
+        <div id="app" class="view"></div>
+      </main>
+    </div>
+    <script type="module" src="/js/theme.js"></script>
+    <script type="module" src="/js/learner/today.js"></script>
+  </body>
+</html>

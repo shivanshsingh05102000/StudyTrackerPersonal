@@ -1,0 +1,170 @@
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --paper: #fff8fb;
+  --surface: #ffffff;
+  --surface-raised: #fff0f6;
+  --control: #f8e8f1;
+  --ink: #241923;
+  --ink-muted: #716271;
+  --rule: #ecd9e4;
+  --slate: #2563eb;
+  --moss: #10a66f;
+  --signal: #f97316;
+  --alarm: #ef4444;
+  --info: #0891b2;
+  --focus: #ec4899;
+  --inverse-ink: #ffffff;
+  --shadow: 0 16px 44px rgba(80, 36, 86, 0.11);
+  --soft-shadow: 0 8px 24px rgba(80, 36, 86, 0.08);
+
+  --subject-polity: #2563eb;
+  --subject-economy: #16a34a;
+  --subject-ancient-history: #f97316;
+  --subject-medieval-history: #9333ea;
+  --subject-modern-history: #ef4444;
+  --subject-geography: #0891b2;
+  --subject-static-gk: #eab308;
+
+  --subject-polity-fill: #dbeafe;
+  --subject-economy-fill: #dcfce7;
+  --subject-ancient-history-fill: #ffedd5;
+  --subject-medieval-history-fill: #f3e8ff;
+  --subject-modern-history-fill: #fee2e2;
+  --subject-geography-fill: #cffafe;
+  --subject-static-gk-fill: #fef3c7;
+  --subject-none-fill: #f1f5f9;
+
+  --subject-polity-ink: #16315f;
+  --subject-economy-ink: #14532d;
+  --subject-ancient-history-ink: #7c2d12;
+  --subject-medieval-history-ink: #4c1d95;
+  --subject-modern-history-ink: #7f1d1d;
+  --subject-geography-ink: #164e63;
+  --subject-static-gk-ink: #713f12;
+
+  --day-regular: #dcfce7;
+  --day-heavy: #bbf7d0;
+  --day-holiday-bonus: #fed7aa;
+  --day-break-intensive: #ddd6fe;
+  --day-revision: #dbeafe;
+  --day-sectional: #fde68a;
+  --day-mock: #fecdd3;
+  --day-overflow: #ffffff;
+  --day-buffer: #f1f5f9;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --paper: #111318;
+  --surface: #181b22;
+  --surface-raised: #20242d;
+  --control: #252a34;
+  --ink: #f7f3f7;
+  --ink-muted: #b8adba;
+  --rule: #333845;
+  --slate: #8fb6ff;
+  --moss: #6ee7b7;
+  --signal: #fb923c;
+  --alarm: #f87171;
+  --info: #67e8f9;
+  --focus: #f472b6;
+  --inverse-ink: #111318;
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
+  --soft-shadow: 0 10px 28px rgba(0, 0, 0, 0.24);
+
+  --subject-polity: #60a5fa;
+  --subject-economy: #4ade80;
+  --subject-ancient-history: #fb923c;
+  --subject-medieval-history: #c084fc;
+  --subject-modern-history: #f87171;
+  --subject-geography: #22d3ee;
+  --subject-static-gk: #facc15;
+
+  --subject-polity-fill: #172b4f;
+  --subject-economy-fill: #113821;
+  --subject-ancient-history-fill: #43210d;
+  --subject-medieval-history-fill: #2d1f46;
+  --subject-modern-history-fill: #461d1d;
+  --subject-geography-fill: #123944;
+  --subject-static-gk-fill: #3f3108;
+  --subject-none-fill: #242936;
+
+  --subject-polity-ink: #dbeafe;
+  --subject-economy-ink: #dcfce7;
+  --subject-ancient-history-ink: #ffedd5;
+  --subject-medieval-history-ink: #f3e8ff;
+  --subject-modern-history-ink: #fee2e2;
+  --subject-geography-ink: #cffafe;
+  --subject-static-gk-ink: #fef3c7;
+
+  --day-regular: #153d2a;
+  --day-heavy: #1f5a38;
+  --day-holiday-bonus: #573211;
+  --day-break-intensive: #382e5c;
+  --day-revision: #173459;
+  --day-sectional: #4f3b12;
+  --day-mock: #55202a;
+  --day-overflow: #181b22;
+  --day-buffer: #252a34;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+
+    --paper: #111318;
+    --surface: #181b22;
+    --surface-raised: #20242d;
+    --control: #252a34;
+    --ink: #f7f3f7;
+    --ink-muted: #b8adba;
+    --rule: #333845;
+    --slate: #8fb6ff;
+    --moss: #6ee7b7;
+    --signal: #fb923c;
+    --alarm: #f87171;
+    --info: #67e8f9;
+    --focus: #f472b6;
+    --inverse-ink: #111318;
+    --shadow: 0 18px 50px rgba(0, 0, 0, 0.34);
+    --soft-shadow: 0 10px 28px rgba(0, 0, 0, 0.24);
+
+    --subject-polity: #60a5fa;
+    --subject-economy: #4ade80;
+    --subject-ancient-history: #fb923c;
+    --subject-medieval-history: #c084fc;
+    --subject-modern-history: #f87171;
+    --subject-geography: #22d3ee;
+    --subject-static-gk: #facc15;
+
+    --subject-polity-fill: #172b4f;
+    --subject-economy-fill: #113821;
+    --subject-ancient-history-fill: #43210d;
+    --subject-medieval-history-fill: #2d1f46;
+    --subject-modern-history-fill: #461d1d;
+    --subject-geography-fill: #123944;
+    --subject-static-gk-fill: #3f3108;
+    --subject-none-fill: #242936;
+
+    --subject-polity-ink: #dbeafe;
+    --subject-economy-ink: #dcfce7;
+    --subject-ancient-history-ink: #ffedd5;
+    --subject-medieval-history-ink: #f3e8ff;
+    --subject-modern-history-ink: #fee2e2;
+    --subject-geography-ink: #cffafe;
+    --subject-static-gk-ink: #fef3c7;
+
+    --day-regular: #153d2a;
+    --day-heavy: #1f5a38;
+    --day-holiday-bonus: #573211;
+    --day-break-intensive: #382e5c;
+    --day-revision: #173459;
+    --day-sectional: #4f3b12;
+    --day-mock: #55202a;
+    --day-overflow: #181b22;
+    --day-buffer: #252a34;
+  }
+}

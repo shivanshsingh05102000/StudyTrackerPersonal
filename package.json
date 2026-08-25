@@ -1,0 +1,17 @@
+{
+  "name": "local-study-tracker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Offline local study tracker with learner and admin screens.",
+  "scripts": {
+    "start": "node server.js",
+    "reset": "node lib/seed.js --reset",
+    "test": "node --test tests/*.test.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

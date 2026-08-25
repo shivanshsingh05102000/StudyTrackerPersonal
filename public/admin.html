@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin study tracker</title>
+    <link rel="stylesheet" href="/css/tokens.css">
+    <link rel="stylesheet" href="/css/app.css">
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="brand-row">
+          <p class="brand">Admin</p>
+          <button type="button" class="theme-toggle" data-theme-toggle>
+            <span data-theme-label>Theme</span>
+          </button>
+        </div>
+        <nav class="nav" aria-label="Admin views">
+          <button data-view="dashboard" class="active">Dashboard</button>
+          <button data-view="calendar">Calendar</button>
+          <button data-view="editor">Schedule</button>
+          <button data-view="holidays">Holidays</button>
+          <button data-view="rebalance">Rebalance</button>
+          <button data-view="static">Static GK</button>
+          <button data-view="data">Data</button>
+        </nav>
+        <button id="logout" class="logout">Log out</button>
+      </aside>
+      <main class="main">
+        <div id="app" class="view"></div>
+      </main>
+    </div>
+    <script type="module" src="/js/theme.js"></script>
+    <script type="module" src="/js/admin/dashboard.js"></script>
+  </body>
+</html>
