@@ -21,7 +21,7 @@
         <div class="demo-access" aria-label="Demo accounts">
           <div>
             <strong>Demo access</strong>
-            <span>learner / learner123 - admin / admin123</span>
+            <span id="demo-credentials">learner / learner123 - admin / admin123</span>
           </div>
           <div class="demo-actions">
             <button type="button" data-demo-login="learner">Learner</button>
@@ -52,6 +52,11 @@
       const passwordInput = document.querySelector("#password-input");
       const togglePassword = document.querySelector("#toggle-password");
       const demoButtons = document.querySelectorAll("[data-demo-login]");
+      const demoCredentials = document.querySelector("#demo-credentials");
+      const demoAccounts = {
+        learner: { username: "learner", password: "learner123" },
+        admin: { username: "admin", password: "admin123" }
+      };
 
       togglePassword.addEventListener("click", () => {
         const showing = passwordInput.type === "text";
@@ -71,10 +76,22 @@
         }
       }
 
+      async function loadLoginOptions() {
+        try {
+          const data = await request("/api/login-options", { skipAuthRedirect: true });
+          (data.accounts || []).forEach((account) => {
+            demoAccounts[account.username] = account;
+          });
+          demoCredentials.textContent = `learner / ${demoAccounts.learner.password} - admin / ${demoAccounts.admin.password}`;
+        } catch (_error) {
+          demoCredentials.textContent = "learner / learner123 - admin / admin123";
+        }
+      }
+
       demoButtons.forEach((button) => {
         button.addEventListener("click", () => {
           const username = button.dataset.demoLogin;
-          const password = username === "admin" ? "admin123" : "learner123";
+          const password = demoAccounts[username].password;
           form.elements.username.value = username;
           passwordInput.value = password;
           logIn({ username, password });
@@ -85,6 +102,8 @@
         event.preventDefault();
         logIn(Object.fromEntries(new FormData(form).entries()));
       });
+
+      loadLoginOptions();
     </script>
   </body>
 </html>

@@ -19,6 +19,7 @@ learner / learner123
 ```
 
 The login screen also has one-click demo buttons for both accounts.
+Admins can change these demo passwords from **Data tools > Login passwords**. The login page reads those saved values so the demo buttons stay in sync.
 
 For deployment, only these environment variables are needed:
 
@@ -68,11 +69,15 @@ The command prompts for `RESET` before deleting `data/state.json`.
 
 The admin Data screen also supports downloading `state.json`, listing/restoring backups, undoing admin edits, resetting progress, and resetting everything.
 
+Learner and admin users can export progress as CSV or JSON from the Progress/Data screens. Exports include topic status, resource counts, MCQ scores, Static GK status, and current computed stats.
+
 ## Schedule Notes
 
 Static GK is integrated into the daily schedule rather than treated as a separate learner area. The 24 new Static GK items are scheduled across November 2-28, 2026, one new item per non-Sunday day. November 30 is used for consolidation. Later December and January Static GK blocks continue as rotation practice, and Static GK counts toward daily resources and overall completion.
 
 Empty Sundays are now recursive revision days. Each Sunday deep-reviews the latest completed week and quick-recalls older weeks by subject, so repeated material takes less time on later passes instead of leaving the calendar at zero.
+
+The Today and Progress screens show weekly review summaries, current/practical streaks, resources completed this week, and backlog cleared this week.
 
 The monthly second Saturday is marked as `Second Saturday` inside the schedule window. Normal study days on those dates become holiday bonus days; mock and sectional days keep their main day type while still showing the holiday label.
 

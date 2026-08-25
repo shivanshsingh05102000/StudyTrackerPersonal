@@ -16,6 +16,7 @@ const {
   shiftRange,
   spawnRevisions,
   todayIso,
+  topicDoneCount,
   topicEstimatedMinutes,
   topicWeight,
   updateDay,
@@ -24,9 +25,13 @@ const {
 const { computeStats } = require("./lib/stats");
 const { ensureState, listBackups, loadState, resetAll, restoreBackup, saveState } = require("./lib/store");
 
-const ACCOUNTS = {
-  admin: { password: "admin123", role: "admin" },
-  learner: { password: "learner123", role: "learner" }
+const ACCOUNT_ROLES = {
+  admin: "admin",
+  learner: "learner"
+};
+const DEFAULT_CREDENTIALS = {
+  adminPassword: "admin123",
+  learnerPassword: "learner123"
 };
 
 const HOST = process.env.HOST || "127.0.0.1";
@@ -102,9 +107,23 @@ function verifyJwt(token, expectedUse) {
   if (payload.iss !== "local-study-tracker" || payload.aud !== "study-tracker") return null;
   if (payload.tokenUse !== expectedUse) return null;
   if (!payload.exp || payload.exp <= now) return null;
-  const account = ACCOUNTS[payload.sub];
-  if (!account || account.role !== payload.role) return null;
+  if (ACCOUNT_ROLES[payload.sub] !== payload.role) return null;
   return payload;
+}
+
+function credentialsFromState(state) {
+  return {
+    ...DEFAULT_CREDENTIALS,
+    ...(state.config?.credentials || {})
+  };
+}
+
+function loginOptionsFromState(state) {
+  const credentials = credentialsFromState(state);
+  return [
+    { username: "learner", password: credentials.learnerPassword, role: "learner", label: "Learner" },
+    { username: "admin", password: credentials.adminPassword, role: "admin", label: "Admin" }
+  ];
 }
 
 function authCookie(name, value, maxAgeSeconds) {
@@ -325,19 +344,96 @@ function resetProgressKeepSchedule(state) {
   return { state: next, summary: "Reset all learner progress and kept the schedule" };
 }
 
-app.post("/api/login", (req, res) => {
-  const { username, password } = req.body || {};
-  const account = ACCOUNTS[username];
-  if (!account || account.password !== password) {
-    return res.status(401).json({ error: "invalid_login", message: "Username or password is incorrect." });
+function csvValue(value) {
+  const text = String(value ?? "");
+  return /[",\n\r]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+}
+
+function progressTopicRows(state) {
+  return Object.values(state.topics)
+    .sort((a, b) => compareIso(a.scheduledDate, b.scheduledDate) || a.subject.localeCompare(b.subject) || a.topic.localeCompare(b.topic))
+    .map((topic) => ({
+      type: "topic",
+      id: topic.id,
+      subject: topic.subject,
+      title: topic.topic,
+      scheduledDate: topic.scheduledDate,
+      status: topic.status,
+      resourcesDone: topicDoneCount(topic),
+      resourcesTotal: topicWeight(topic),
+      mcqScore: topic.mcqScore ?? "",
+      confidence: "",
+      actualMinutes: topic.actualMinutes ?? "",
+      notes: topic.notes || ""
+    }));
+}
+
+function progressStaticRows(state) {
+  return Object.values(state.staticGk || {})
+    .sort((a, b) => String(a.introducedOn || "9999-99-99").localeCompare(String(b.introducedOn || "9999-99-99")) || a.label.localeCompare(b.label))
+    .map((item) => ({
+      type: "static_gk",
+      id: item.id,
+      subject: "Static GK",
+      title: item.label,
+      scheduledDate: item.introducedOn || "",
+      status: item.status,
+      resourcesDone: item.status === "done" ? 1 : 0,
+      resourcesTotal: 1,
+      mcqScore: "",
+      confidence: item.confidence ?? "",
+      actualMinutes: "",
+      notes: ""
+    }));
+}
+
+function progressExport(state) {
+  return {
+    exportedAt: new Date().toISOString(),
+    stats: computeStats(state),
+    topics: progressTopicRows(state),
+    staticGk: progressStaticRows(state)
+  };
+}
+
+function progressCsv(state) {
+  const headers = ["type", "id", "subject", "title", "scheduledDate", "status", "resourcesDone", "resourcesTotal", "mcqScore", "confidence", "actualMinutes", "notes"];
+  const rows = [...progressTopicRows(state), ...progressStaticRows(state)];
+  return [
+    headers.join(","),
+    ...rows.map((row) => headers.map((key) => csvValue(row[key])).join(","))
+  ].join("\n") + "\n";
+}
+
+app.get("/api/login-options", async (_req, res) => {
+  try {
+    const state = await loadState();
+    res.json({ accounts: loginOptionsFromState(state) });
+  } catch (error) {
+    res.status(500).json({ error: "storage_error", message: error.message });
   }
-  setAuthCookies(res, username, account.role, { includeRefresh: true });
-  res.json({
-    username,
-    role: account.role,
-    accessTokenExpiresIn: ACCESS_TOKEN_TTL_SECONDS,
-    refreshTokenExpiresIn: REFRESH_TOKEN_TTL_SECONDS
-  });
+});
+
+app.post("/api/login", async (req, res) => {
+  try {
+    const { username, password } = req.body || {};
+    const state = await loadState();
+    const credentials = credentialsFromState(state);
+    const role = ACCOUNT_ROLES[username];
+    const expected = username === "admin" ? credentials.adminPassword : credentials.learnerPassword;
+    if (!role || expected !== password) {
+      return res.status(401).json({ error: "invalid_login", message: "Username or password is incorrect." });
+    }
+    setAuthCookies(res, username, role, { includeRefresh: true });
+    res.json({
+      username,
+      role,
+      accessTokenExpiresIn: ACCESS_TOKEN_TTL_SECONDS,
+      refreshTokenExpiresIn: REFRESH_TOKEN_TTL_SECONDS
+    });
+  } catch (error) {
+    res.status(500).json({ error: "storage_error", message: error.message });
+  }
 });
 
 app.post("/api/refresh", (req, res) => {
@@ -431,6 +527,27 @@ app.get("/api/gk", async (req, res) => {
         return confidenceA - confidenceB || String(a.introducedOn || "9999-99-99").localeCompare(String(b.introducedOn || "9999-99-99")) || a.label.localeCompare(b.label);
       });
     sendState(res, state, { items });
+  } catch (error) {
+    res.status(500).json({ error: "storage_error", message: error.message });
+  }
+});
+
+app.get("/api/export/progress.json", async (_req, res) => {
+  try {
+    const state = await loadState();
+    res.setHeader("Content-Disposition", `attachment; filename="study-progress-${todayIso()}.json"`);
+    res.json(progressExport(state));
+  } catch (error) {
+    res.status(500).json({ error: "storage_error", message: error.message });
+  }
+});
+
+app.get("/api/export/progress.csv", async (_req, res) => {
+  try {
+    const state = await loadState();
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="study-progress-${todayIso()}.csv"`);
+    res.send(progressCsv(state));
   } catch (error) {
     res.status(500).json({ error: "storage_error", message: error.message });
   }
@@ -614,6 +731,24 @@ app.patch("/api/admin/config", requireAdmin, (req, res) => {
     if (req.body.examDate !== undefined) validateExamDateChange(next, req.body.examDate);
     next.config = { ...next.config, ...req.body };
     return { state: next, summary: "Updated configuration" };
+  });
+});
+
+app.patch("/api/admin/credentials", requireAdmin, (req, res) => {
+  mutateAdmin(req, res, "update_credentials", (state) => {
+    const next = clone(state);
+    const current = credentialsFromState(next);
+    const credentials = { ...current };
+    if (req.body.adminPassword !== undefined && req.body.adminPassword !== "") {
+      if (String(req.body.adminPassword).length < 4) throw new Error("Admin password must be at least 4 characters.");
+      credentials.adminPassword = String(req.body.adminPassword);
+    }
+    if (req.body.learnerPassword !== undefined && req.body.learnerPassword !== "") {
+      if (String(req.body.learnerPassword).length < 4) throw new Error("Learner password must be at least 4 characters.");
+      credentials.learnerPassword = String(req.body.learnerPassword);
+    }
+    next.config.credentials = credentials;
+    return { state: next, summary: "Updated login credentials" };
   });
 });
 

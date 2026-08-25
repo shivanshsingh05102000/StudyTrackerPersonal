@@ -23,12 +23,12 @@ function renderDashboard(target, data) {
     <header class="screen-header">
       <div>
         <h1>Dashboard</h1>
-        <p>${escapeHtml(state.config.learnerName)} · exam <span class="date">${escapeHtml(state.config.examDate)}</span>${state.config.examDateConfirmed ? "" : " · unconfirmed"}</p>
+        <p>${escapeHtml(state.config.learnerName)} - exam <span class="date">${escapeHtml(state.config.examDate)}</span>${state.config.examDateConfirmed ? "" : " - unconfirmed"}</p>
       </div>
     </header>
     <div class="verdict ${escapeHtml(stats.pace.verdict)}">
       <strong>${escapeHtml(verdictText(stats))}</strong>
-      <span class="num"> Required ${stats.pace.requiredPerDay}/day · actual ${stats.pace.actual7Day}/day</span>
+      <span class="num"> Required ${stats.pace.requiredPerDay}/day - actual ${stats.pace.actual7Day}/day</span>
     </div>
     <section class="metrics">
       <div class="metric"><span class="metric-label">Days remaining</span><span class="metric-value">${stats.pace.remainingDays}</span></div>
@@ -36,6 +36,9 @@ function renderDashboard(target, data) {
       <div class="metric"><span class="metric-label">Backlog</span><span class="metric-value">${stats.pace.backlogCount}</span></div>
       <div class="metric"><span class="metric-label">Backlog minutes</span><span class="metric-value">${stats.pace.backlogMinutes}</span></div>
       <div class="metric"><span class="metric-label">Overall</span><span class="metric-value">${formatPercent(stats.completion.percent)}</span></div>
+      <div class="metric"><span class="metric-label">Study streak</span><span class="metric-value">${stats.practical?.studyDaysInRow || 0}</span></div>
+      <div class="metric"><span class="metric-label">Week resources</span><span class="metric-value">${stats.practical?.resourcesDoneThisWeek || 0}</span></div>
+      <div class="metric"><span class="metric-label">Backlog cleared</span><span class="metric-value">${stats.practical?.backlogClearedThisWeek || 0}</span></div>
     </section>
     ${stats.pace.requiredPerDay > stats.pace.actual7Day ? `<div class="alarm-band">Required pace exceeds the 7-day average. This is the headline risk.</div>` : ""}
     <section class="section">
@@ -48,14 +51,14 @@ function renderDashboard(target, data) {
     <section class="section">
       <h2 class="section-title">Weakness</h2>
       <ul class="plain-list">
-        ${stats.weakness.ranked.map((item) => `<li><strong>${escapeHtml(item.subject)}</strong> · weakness <span class="num">${item.weakness}</span> · average <span class="num">${item.avgScore}%</span></li>`).join("")}
+        ${stats.weakness.ranked.map((item) => `<li><strong>${escapeHtml(item.subject)}</strong> - weakness <span class="num">${item.weakness}</span> - average <span class="num">${item.avgScore}%</span></li>`).join("")}
         ${stats.weakness.notEnoughData.map((item) => `<li>${escapeHtml(item.subject)}: not enough data (<span class="num">${item.scored}</span> scored).</li>`).join("")}
       </ul>
     </section>
     <section class="section">
       <h2 class="section-title">Recent activity</h2>
       <ul class="activity-list">
-        ${stats.activity.map((item) => `<li><time>${escapeHtml(String(item.at).slice(0, 19).replace("T", " "))}</time> · ${escapeHtml(item.summary)}</li>`).join("")}
+        ${stats.activity.map((item) => `<li><time>${escapeHtml(String(item.at).slice(0, 19).replace("T", " "))}</time> - ${escapeHtml(item.summary)}</li>`).join("")}
         ${stats.activity.length === 0 ? "<li>No activity yet.</li>" : ""}
       </ul>
     </section>
@@ -79,16 +82,19 @@ async function renderCalendarView(target, data) {
 function renderDataTools(target, data, reload) {
   const state = data.state;
   const audit = [...(state.auditLog || [])].sort((a, b) => String(b.at).localeCompare(String(a.at)));
+  const credentials = state.config.credentials || { adminPassword: "admin123", learnerPassword: "learner123" };
   target.innerHTML = `
     <header class="screen-header">
       <div>
         <h1>Data tools</h1>
-        <p>Download, restore, undo, or reset local JSON data.</p>
+        <p>Download, restore, undo, reset data, or update demo login passwords.</p>
       </div>
     </header>
     <section class="section">
       <div class="toolbar">
         <button id="download-state" type="button">Download state.json</button>
+        <a class="button-link" href="/api/export/progress.csv">Export progress CSV</a>
+        <a class="button-link" href="/api/export/progress.json">Export progress JSON</a>
         <button id="load-backups" type="button">List backups</button>
         <button id="reset-progress" type="button">Reset progress</button>
         <button id="reset-all" type="button">Reset everything</button>
@@ -97,11 +103,28 @@ function renderDataTools(target, data, reload) {
       <div id="backup-list"></div>
     </section>
     <section class="section">
+      <h2 class="section-title">Login passwords</h2>
+      <form id="credentials-form" class="form-grid">
+        <label class="field">
+          <span>Learner password</span>
+          <input name="learnerPassword" type="text" value="${escapeHtml(credentials.learnerPassword)}" autocomplete="off">
+        </label>
+        <label class="field">
+          <span>Admin password</span>
+          <input name="adminPassword" type="text" value="${escapeHtml(credentials.adminPassword)}" autocomplete="off">
+        </label>
+        <div class="field command-field">
+          <span>&nbsp;</span>
+          <button type="submit">Save passwords</button>
+        </div>
+      </form>
+    </section>
+    <section class="section">
       <h2 class="section-title">Audit log</h2>
       <div class="audit-list">
         ${audit.map((entry) => `
           <article class="audit-entry">
-            <p><time>${escapeHtml(String(entry.at).slice(0, 19).replace("T", " "))}</time> · ${escapeHtml(entry.action)} · ${escapeHtml(entry.summary)}</p>
+            <p><time>${escapeHtml(String(entry.at).slice(0, 19).replace("T", " "))}</time> - ${escapeHtml(entry.action)} - ${escapeHtml(entry.summary)}</p>
             <button data-undo="${escapeHtml(entry.id)}" type="button" ${entry.undone ? "disabled" : ""}>Undo</button>
           </article>
         `).join("")}
@@ -111,6 +134,13 @@ function renderDataTools(target, data, reload) {
   `;
 
   const message = target.querySelector("#data-message");
+  target.querySelector("#credentials-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const body = Object.fromEntries(new FormData(event.currentTarget).entries());
+    await request("/api/admin/credentials", { method: "PATCH", body });
+    message.textContent = "Passwords saved. Login page demo buttons now use the new values.";
+  });
+
   target.querySelector("#download-state").addEventListener("click", () => {
     const blob = new Blob([`${JSON.stringify(state, null, 2)}\n`], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -125,7 +155,7 @@ function renderDataTools(target, data, reload) {
     const result = await request("/api/admin/backups");
     target.querySelector("#backup-list").innerHTML = `
       <ul class="plain-list">
-        ${result.backups.map((backup) => `<li>${escapeHtml(backup.filename)} · <span class="num">${backup.bytes}</span> bytes <button data-restore="${escapeHtml(backup.filename)}" type="button">Restore</button></li>`).join("")}
+        ${result.backups.map((backup) => `<li>${escapeHtml(backup.filename)} - <span class="num">${backup.bytes}</span> bytes <button data-restore="${escapeHtml(backup.filename)}" type="button">Restore</button></li>`).join("")}
         ${result.backups.length === 0 ? "<li>No backups yet.</li>" : ""}
       </ul>
     `;

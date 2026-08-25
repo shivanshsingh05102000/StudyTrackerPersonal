@@ -6,10 +6,16 @@ const app = document.querySelector("#app");
 const nav = document.querySelector(".nav");
 document.querySelector("#logout").addEventListener("click", logout);
 
+let saveFlash = "";
+
 function resourceProgress(topic) {
   const keys = Object.keys(topic.resources || {});
   const done = keys.filter((key) => topic.resources[key] === "done").length;
   return keys.length ? Math.round((done / keys.length) * 100) : 0;
+}
+
+function rememberSaved(text = "Saved") {
+  saveFlash = text;
 }
 
 function showSaved(target, text = "Saved") {
@@ -17,6 +23,20 @@ function showSaved(target, text = "Saved") {
   window.setTimeout(() => {
     if (target.textContent === text) target.textContent = "";
   }, 1300);
+}
+
+function dayResourceSummary(day) {
+  const topicTotals = (day.topics || []).reduce((summary, topic) => {
+    const keys = Object.keys(topic.resources || {});
+    summary.total += keys.length;
+    summary.done += keys.filter((key) => topic.resources[key] === "done").length;
+    return summary;
+  }, { done: 0, total: 0 });
+  if (day.staticGk) {
+    topicTotals.total += 1;
+    if (day.staticGk.status === "done") topicTotals.done += 1;
+  }
+  return topicTotals;
 }
 
 function topicCard(topic, stats) {
@@ -109,6 +129,54 @@ function subjectChips(subjects = []) {
     .join("");
 }
 
+function subjectNameChips(subjects = []) {
+  return subjects
+    .slice(0, 6)
+    .map((subject) => `<span class="chip">${escapeHtml(subject)}</span>`)
+    .join("");
+}
+
+function todayDashboard(day, stats) {
+  const resources = dayResourceSummary(day);
+  const weekly = stats.weekly?.current;
+  return `
+    <section class="today-dashboard">
+      <div class="metric"><span class="metric-label">Today resources</span><span class="metric-value">${resources.done}/${resources.total}</span></div>
+      <div class="metric"><span class="metric-label">Estimated minutes</span><span class="metric-value">${escapeHtml(day.estMinutes || 0)}</span></div>
+      <div class="metric"><span class="metric-label">Backlog</span><span class="metric-value">${stats.pace.backlogCount}</span></div>
+      <div class="metric"><span class="metric-label">Study streak</span><span class="metric-value">${stats.practical?.studyDaysInRow || 0}</span></div>
+      <div class="metric"><span class="metric-label">This week done</span><span class="metric-value">${weekly?.doneResources || 0}/${weekly?.totalResources || 0}</span></div>
+      <div class="metric"><span class="metric-label">Backlog cleared</span><span class="metric-value">${stats.practical?.backlogClearedThisWeek || 0}</span></div>
+    </section>
+  `;
+}
+
+function weeklyReview(stats) {
+  const current = stats.weekly?.current;
+  const previous = stats.weekly?.previous;
+  const next = stats.weekly?.nextRevision;
+  if (!current) return "";
+  return `
+    <section class="section weekly-review">
+      <div class="topic-top">
+        <div>
+          <span class="chip">Weekly review</span>
+          <h2 class="section-title">This week</h2>
+        </div>
+        <span class="chip">${escapeHtml(current.from)} to ${escapeHtml(current.to)}</span>
+      </div>
+      <div class="metrics compact-metrics">
+        <div class="metric"><span class="metric-label">Completed resources</span><span class="metric-value">${current.doneResources}/${current.totalResources}</span></div>
+        <div class="metric"><span class="metric-label">Completed topics</span><span class="metric-value">${current.completedTopics}</span></div>
+        <div class="metric"><span class="metric-label">Missed days</span><span class="metric-value">${current.missedDays}</span></div>
+        <div class="metric"><span class="metric-label">Previous week</span><span class="metric-value">${previous?.completionPercent ?? 0}%</span></div>
+      </div>
+      ${current.subjects?.length ? `<div class="revision-subjects">${subjectNameChips(current.subjects)}</div>` : ""}
+      ${next ? `<p>Next Sunday revision: <span class="date">${escapeHtml(next.date)}</span>, <span class="minutes">${escapeHtml(next.minutes)}</span> min. ${escapeHtml(next.detail)}</p>` : "<p>No upcoming Sunday revision found in the schedule window.</p>"}
+    </section>
+  `;
+}
+
 function topicPreview(topics = []) {
   const shown = topics.slice(0, 8);
   const extra = topics.length - shown.length;
@@ -168,7 +236,7 @@ function bindTopicCards() {
             method: "PATCH",
             body: { resource: input.dataset.resource, done: input.checked }
           });
-          showSaved(saved);
+          rememberSaved("Saved");
           await loadToday();
         } catch (err) {
           error.textContent = err.message || "Could not save. The data file may be open in another program. Try again.";
@@ -181,7 +249,7 @@ function bindTopicCards() {
         error.textContent = "";
         try {
           await request(`/api/topic/${id}/mcq`, { method: "PATCH", body: { score: mcq.value } });
-          showSaved(saved);
+          rememberSaved("MCQ saved");
           await loadToday();
         } catch (err) {
           error.textContent = err.message;
@@ -198,6 +266,7 @@ function bindTopicCards() {
           body: { actualMinutes: actual?.value ?? null, notes: notes?.value ?? "" }
         });
         showSaved(saved);
+        showSaved(document.querySelector("#global-save"), "Saved");
       } catch (err) {
         error.textContent = err.message;
       }
@@ -210,6 +279,7 @@ function bindTopicCards() {
     input.addEventListener("change", async () => {
       const wrapper = input.closest("[data-gk-id]");
       await request(`/api/gk/${wrapper.dataset.gkId}`, { method: "PATCH", body: { status: input.checked ? "done" : "pending" } });
+      rememberSaved("Static GK saved");
       await loadToday();
     });
   });
@@ -218,6 +288,7 @@ function bindTopicCards() {
       if (!select.value) return;
       const wrapper = select.closest("[data-gk-id]");
       await request(`/api/gk/${wrapper.dataset.gkId}`, { method: "PATCH", body: { confidence: Number(select.value) } });
+      rememberSaved("Confidence saved");
       await loadToday();
     });
   });
@@ -240,6 +311,7 @@ async function loadToday() {
       </div>
       <div class="saved-indicator" id="global-save"></div>
     </header>
+    ${todayDashboard(day, stats)}
     <div class="verdict ${escapeHtml(stats.pace.verdict)}">
       <strong>${escapeHtml(verdictText(stats))}</strong>
       <span class="num"> Required ${stats.pace.requiredPerDay}/day - actual ${stats.pace.actual7Day}/day</span>
@@ -267,12 +339,17 @@ async function loadToday() {
         <div class="topic-list">${day.specialTasks.map(specialTaskCard).join("")}</div>
       </section>
     ` : ""}
+    ${weeklyReview(stats)}
     <section class="section">
       <h2 class="section-title">Minutes</h2>
       <p>Estimated <span class="minutes">${escapeHtml(day.estMinutes)}</span> - actual <span class="minutes">${totalActual}</span></p>
       <button type="button" id="finish-day">Finish day</button>
     </section>
   `;
+  if (saveFlash) {
+    showSaved(document.querySelector("#global-save"), saveFlash);
+    saveFlash = "";
+  }
   document.querySelector("#finish-day")?.addEventListener("click", () => {
     document.querySelectorAll(".topic-card details").forEach((details) => { details.open = false; });
     showSaved(document.querySelector("#global-save"), "Collapsed");

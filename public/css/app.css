@@ -60,14 +60,31 @@ button {
   transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, color 160ms ease, transform 160ms ease;
 }
 
+.button-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 7px 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
 button:hover,
-button.active {
+button.active,
+.button-link:hover {
   border-color: var(--slate);
   background: var(--control);
   box-shadow: var(--soft-shadow);
 }
 
-button:hover {
+button:hover,
+.button-link:hover {
   transform: translateY(-1px);
 }
 
@@ -388,6 +405,13 @@ label {
   gap: 10px;
 }
 
+.today-dashboard,
+.compact-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
 .metric {
   border: 1px solid var(--rule);
   border-radius: 8px;
@@ -412,6 +436,11 @@ label {
   display: block;
   font-size: 28px;
   font-weight: 800;
+}
+
+.today-dashboard .metric-value,
+.compact-metrics .metric-value {
+  font-size: 22px;
 }
 
 .verdict {
@@ -590,6 +619,10 @@ label {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 8px;
+}
+
+.command-field {
+  align-self: end;
 }
 
 .static-gk-panel,
@@ -1214,17 +1247,82 @@ tbody tr:hover {
   }
 }
 
-@media (max-width: 420px) {
-  .main {
-    padding: 12px;
+@media (max-width: 640px) {
+  .screen-header {
+    display: grid;
   }
 
   .calendar-grid {
     grid-template-columns: 1fr;
   }
 
+  .month {
+    padding: 10px;
+  }
+
+  .weekdays {
+    display: none;
+  }
+
+  .days-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .day-cell.blank {
+    display: none;
+  }
+
   .day-cell {
-    min-height: 38px;
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    align-items: center;
+    aspect-ratio: auto;
+    min-height: 42px;
+    padding: 8px 10px;
+  }
+
+  .day-cell .date,
+  .day-cell .count,
+  .subject-marks {
+    position: static;
+  }
+
+  .day-cell .date {
+    font-size: 13px;
+  }
+
+  .subject-marks {
+    justify-self: stretch;
+    align-self: center;
+    grid-column: 2;
+    max-width: 120px;
+  }
+
+  .day-cell .count {
+    grid-column: 3;
+    justify-self: end;
+  }
+
+  .subject-mark {
+    max-width: none;
+  }
+
+  .state-done::after,
+  .state-partial::after {
+    left: auto;
+    right: 30px;
+    bottom: 15px;
+  }
+}
+
+@media (max-width: 420px) {
+  .main {
+    padding: 12px;
+  }
+
+  .day-cell {
+    min-height: 40px;
   }
 }
 

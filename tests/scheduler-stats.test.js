@@ -194,3 +194,19 @@ test("11.5 weakness ranks only subjects with at least three scored topics", () =
   assert.equal(weakness.notEnoughData.length, 1);
   assert.equal(weakness.notEnoughData[0].subject, "Geography");
 });
+
+test("weekly review and practical streak metrics summarize current week", () => {
+  const state = baseState();
+  ["2026-08-24", "2026-08-25", "2026-08-26", "2026-08-30"].forEach((date) => addDay(state, date, 1));
+  const topic = addTopic(state, "weekly", "2026-08-25", "Polity", { video: "done", pdf: "pending" });
+  topic.resourceCompletedAt.video = "2026-08-25T09:00:00.000Z";
+  state.days["2026-08-30"].specialTasks = [{ type: "recursive_revision", detail: "Review week", minutes: 60, subjects: [{ subject: "Polity", count: 1 }] }];
+
+  const stats = computeStats(state, { today: "2026-08-25" });
+  assert.equal(stats.weekly.current.from, "2026-08-24");
+  assert.equal(stats.weekly.current.to, "2026-08-30");
+  assert.equal(stats.weekly.current.doneResources, 1);
+  assert.equal(stats.weekly.current.totalResources, 2);
+  assert.equal(stats.practical.resourcesDoneThisWeek, 1);
+  assert.equal(stats.weekly.nextRevision.date, "2026-08-30");
+});

@@ -95,6 +95,10 @@ async function run() {
     });
     assert(invalidLogin.response.status === 401, "Invalid login should fail.");
 
+    const loginOptions = await request("/api/login-options");
+    assert(loginOptions.response.status === 200, "Login options API failed.");
+    assert(loginOptions.json.accounts.some((account) => account.username === "learner" && account.password === "learner123"), "Learner demo credentials are missing.");
+
     const learnerJar = new Map();
     const learnerLogin = await request("/api/login", {
       method: "POST",
@@ -114,6 +118,7 @@ async function run() {
     const stats = await request("/api/stats", {}, learnerJar);
     assert(stats.response.status === 200, "Stats API failed.");
     assert(stats.json.stats.staticGk.total === 24, "Stats API Static GK total is wrong.");
+    assert(stats.json.stats.weekly.current, "Weekly stats are missing.");
 
     const range = await request("/api/range", {}, learnerJar);
     assert(range.response.status === 200, "Range API failed.");
@@ -154,6 +159,24 @@ async function run() {
     assert(adminState.response.status === 200, "Admin state API failed.");
     assert(Object.keys(adminState.json.state.topics).length === 90, "Admin state topic count is wrong.");
 
+    const csvExport = await request("/api/export/progress.csv", {}, adminJar);
+    assert(csvExport.response.status === 200 && csvExport.text.includes("type,id,subject,title"), "Progress CSV export failed.");
+    const jsonExport = await request("/api/export/progress.json", {}, adminJar);
+    assert(jsonExport.response.status === 200 && jsonExport.json.topics.length === 90, "Progress JSON export failed.");
+
+    const credentialUpdate = await request("/api/admin/credentials", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: { learnerPassword: "learn456", adminPassword: "admin456" }
+    }, adminJar);
+    assert(credentialUpdate.response.status === 200, "Credential update failed.");
+    const changedLogin = await request("/api/login", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: { username: "learner", password: "learn456" }
+    }, new Map());
+    assert(changedLogin.response.status === 200, "Updated learner password did not work.");
+
     for (const asset of ["/favicon.svg", "/css/app.css", "/css/tokens.css", "/js/theme.js", "/js/calendar.js", "/js/learner/today.js", "/js/admin/dashboard.js"]) {
       const result = await request(asset);
       assert(result.response.status === 200, `${asset} did not load.`);
@@ -167,6 +190,8 @@ async function run() {
       learnerApis: "ok",
       persistence: "ok",
       adminApis: "ok",
+      exports: "ok",
+      credentials: "ok",
       sundayRevision: "ok",
       staticGk: "ok",
       assets: "ok"

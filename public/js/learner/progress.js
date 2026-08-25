@@ -25,11 +25,17 @@ function paceChart(stats) {
 }
 
 export function renderProgress(target, stats) {
+  const weekly = stats.weekly?.current;
+  const previous = stats.weekly?.previous;
   target.innerHTML = `
     <header class="screen-header">
       <div>
         <h1>Progress</h1>
         <p>Overall completion is resource-weighted: done resources divided by total resources.</p>
+      </div>
+      <div class="toolbar">
+        <a class="button-link" href="/api/export/progress.csv">Export CSV</a>
+        <a class="button-link" href="/api/export/progress.json">Export JSON</a>
       </div>
     </header>
     <section class="metrics">
@@ -37,6 +43,8 @@ export function renderProgress(target, stats) {
       <div class="metric"><span class="metric-label">Current streak</span><span class="metric-value">${stats.streak.current}</span></div>
       <div class="metric"><span class="metric-label">Longest streak</span><span class="metric-value">${stats.streak.longest}</span></div>
       <div class="metric"><span class="metric-label">Required/day</span><span class="metric-value">${stats.pace.requiredPerDay}</span></div>
+      <div class="metric"><span class="metric-label">This week resources</span><span class="metric-value">${stats.practical?.resourcesDoneThisWeek || 0}</span></div>
+      <div class="metric"><span class="metric-label">Backlog cleared</span><span class="metric-value">${stats.practical?.backlogClearedThisWeek || 0}</span></div>
     </section>
     ${stats.pace.baselineExceeded ? `<div class="alarm-band">Required pace is more than 25% above the original baseline of <span class="num">${stats.pace.baselineRequiredPerDay}</span> resources/day.</div>` : ""}
     <section class="section">
@@ -46,17 +54,27 @@ export function renderProgress(target, stats) {
           <div class="bar-row">
             <strong>${escapeHtml(subject.subject)}</strong>
             ${progressBar(subject.completionPercent)}
-            <span class="num">${subject.done}/${subject.total} · ${subject.avgScore === null ? "no MCQ" : `${subject.avgScore}%`}</span>
+            <span class="num">${subject.done}/${subject.total} - ${subject.avgScore === null ? "no MCQ" : `${subject.avgScore}%`}</span>
           </div>
         `).join("")}
         ${stats.staticGk ? `
           <div class="bar-row">
             <strong>Static GK</strong>
             ${progressBar(stats.staticGk.completionPercent)}
-            <span class="num">${stats.staticGk.done}/${stats.staticGk.total} · ${stats.staticGk.avgConfidence === null ? "no confidence" : `confidence ${stats.staticGk.avgConfidence}`}</span>
+            <span class="num">${stats.staticGk.done}/${stats.staticGk.total} - ${stats.staticGk.avgConfidence === null ? "no confidence" : `confidence ${stats.staticGk.avgConfidence}`}</span>
           </div>
         ` : ""}
       </div>
+    </section>
+    <section class="section">
+      <h2 class="section-title">Weekly review</h2>
+      <div class="metrics compact-metrics">
+        <div class="metric"><span class="metric-label">Current week</span><span class="metric-value">${weekly?.completionPercent ?? 0}%</span></div>
+        <div class="metric"><span class="metric-label">Done resources</span><span class="metric-value">${weekly?.doneResources ?? 0}/${weekly?.totalResources ?? 0}</span></div>
+        <div class="metric"><span class="metric-label">Missed days</span><span class="metric-value">${weekly?.missedDays ?? 0}</span></div>
+        <div class="metric"><span class="metric-label">Previous week</span><span class="metric-value">${previous?.completionPercent ?? 0}%</span></div>
+      </div>
+      ${stats.weekly?.nextRevision ? `<p>Next Sunday revision is <span class="date">${escapeHtml(stats.weekly.nextRevision.date)}</span> for <span class="minutes">${escapeHtml(stats.weekly.nextRevision.minutes)}</span> min.</p>` : ""}
     </section>
     <section class="section">
       <h2 class="section-title">Weak areas</h2>
@@ -70,7 +88,7 @@ export function renderProgress(target, stats) {
       </ul>
       <h3 class="section-title">Below threshold</h3>
       <ul class="plain-list">
-        ${stats.weakness.belowThresholdTopics.map((topic) => `<li><a href="/learner.html#topic-${escapeHtml(topic.id)}">${escapeHtml(topic.topic)}</a> · ${escapeHtml(topic.subject)} · <span class="num">${topic.score}%</span></li>`).join("")}
+        ${stats.weakness.belowThresholdTopics.map((topic) => `<li><a href="/learner.html#topic-${escapeHtml(topic.id)}">${escapeHtml(topic.topic)}</a> - ${escapeHtml(topic.subject)} - <span class="num">${topic.score}%</span></li>`).join("")}
         ${stats.weakness.belowThresholdTopics.length === 0 ? "<li>No below-threshold MCQ scores recorded.</li>" : ""}
       </ul>
     </section>
@@ -80,7 +98,7 @@ export function renderProgress(target, stats) {
     </section>
     <section class="section">
       <h2 class="section-title">Time honesty</h2>
-      <p>Estimated <span class="minutes">${stats.time.estimated}</span> min · actual <span class="minutes">${stats.time.actual}</span> min.</p>
+      <p>Estimated <span class="minutes">${stats.time.estimated}</span> min - actual <span class="minutes">${stats.time.actual}</span> min.</p>
       ${stats.time.underBudgeted ? `<div class="warning">Actual time is more than 20% above estimate. The plan is under-budgeted.</div>` : ""}
     </section>
   `;
