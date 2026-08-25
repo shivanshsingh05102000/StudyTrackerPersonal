@@ -154,7 +154,7 @@ async function run() {
     assert(adminState.response.status === 200, "Admin state API failed.");
     assert(Object.keys(adminState.json.state.topics).length === 90, "Admin state topic count is wrong.");
 
-    for (const asset of ["/css/app.css", "/css/tokens.css", "/js/theme.js", "/js/calendar.js", "/js/learner/today.js", "/js/admin/dashboard.js"]) {
+    for (const asset of ["/favicon.svg", "/css/app.css", "/css/tokens.css", "/js/theme.js", "/js/calendar.js", "/js/learner/today.js", "/js/admin/dashboard.js"]) {
       const result = await request(asset);
       assert(result.response.status === 200, `${asset} did not load.`);
       assert(result.text.length > 100, `${asset} looks unexpectedly short.`);

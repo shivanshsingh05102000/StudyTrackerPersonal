@@ -671,9 +671,10 @@ label {
 
 .calendar-shell {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
   align-items: start;
   gap: 16px;
+  min-width: 0;
 }
 
 .calendar-controls {
@@ -716,8 +717,9 @@ label {
 
 .calendar-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
   gap: 14px;
+  min-width: 0;
 }
 
 .month {
@@ -753,7 +755,7 @@ label {
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
-  min-height: 34px;
+  min-height: 36px;
   border: 1px solid color-mix(in srgb, var(--rule) 82%, transparent);
   border-radius: 8px;
   padding: 2px;
@@ -906,18 +908,22 @@ label {
 
 .subject-marks {
   position: absolute;
-  left: 4px;
-  right: 4px;
-  bottom: 13px;
+  left: 16px;
+  right: 20px;
+  bottom: 5px;
   display: flex;
   gap: 2px;
+  min-width: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 .subject-mark {
-  width: 10px;
-  height: 4px;
+  flex: 1 1 8px;
+  max-width: 10px;
+  height: 5px;
   border: 0;
-  border-radius: 2px;
+  border-radius: 999px;
   background: var(--subject-accent, var(--ink-muted));
 }
 
@@ -954,13 +960,44 @@ label {
   align-self: start;
   position: sticky;
   top: 18px;
+  min-width: 0;
   max-height: calc(100vh - 36px);
+  overflow-x: hidden;
   overflow-y: auto;
   border: 1px solid var(--rule);
   border-radius: 8px;
   background: color-mix(in srgb, var(--surface) 90%, var(--surface-raised));
   box-shadow: var(--soft-shadow);
   padding: 14px;
+  overflow-wrap: anywhere;
+}
+
+.calendar-panel .section-title,
+.calendar-panel p,
+.calendar-panel li {
+  min-width: 0;
+}
+
+.calendar-panel .plain-list {
+  min-width: 0;
+}
+
+.calendar-panel .panel-topic {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.calendar-panel .panel-topic-main {
+  flex: 1 1 180px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.calendar-panel .chip {
+  flex: 0 0 auto;
 }
 
 .legend {

@@ -156,7 +156,12 @@ function renderPanel(panel, day) {
     ${staticGkPanel(day)}
     ${day.adminNote ? `<div class="warning">${escapeHtml(day.adminNote)}</div>` : ""}
     <ul class="plain-list">
-      ${topics.map((topic) => `<li><strong>${escapeHtml(topic.subject)}</strong>: ${escapeHtml(topic.topic)} <span class="chip">${escapeHtml(topic.status)}</span></li>`).join("")}
+      ${topics.map((topic) => `
+        <li class="panel-topic">
+          <span class="panel-topic-main"><strong>${escapeHtml(topic.subject)}</strong>: ${escapeHtml(topic.topic)}</span>
+          <span class="chip">${escapeHtml(topic.status)}</span>
+        </li>
+      `).join("")}
       ${special.map(specialTaskItem).join("")}
       ${topics.length === 0 && special.length === 0 && !day.staticGk ? "<li>No scheduled items.</li>" : ""}
     </ul>
