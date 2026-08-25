@@ -25,8 +25,8 @@ const { computeStats } = require("./lib/stats");
 const { ensureState, listBackups, loadState, resetAll, restoreBackup, saveState } = require("./lib/store");
 
 const ACCOUNTS = {
-  admin: { password: process.env.STUDY_TRACKER_ADMIN_PASSWORD || "admin123", role: "admin" },
-  learner: { password: process.env.STUDY_TRACKER_LEARNER_PASSWORD || "learner123", role: "learner" }
+  admin: { password: "admin123", role: "admin" },
+  learner: { password: "learner123", role: "learner" }
 };
 
 const HOST = process.env.HOST || "127.0.0.1";

@@ -20,11 +20,9 @@ learner / learner123
 
 The login screen also has one-click demo buttons for both accounts.
 
-You can override the demo credentials with environment variables:
+For deployment, only these environment variables are needed:
 
 ```bash
-STUDY_TRACKER_ADMIN_PASSWORD=...
-STUDY_TRACKER_LEARNER_PASSWORD=...
 STUDY_TRACKER_AUTH_SECRET=...
 STUDY_TRACKER_DATA_DIR=/var/data
 ```
@@ -80,7 +78,7 @@ The tests cover the required pure algorithms for resource-weighted topic complet
 ## Security
 
 This is local accountability software, not a hardened multi-user system. The default accounts are public demo accounts and passwords are not hashed because the code and JSON files are readable on disk by the same machine user.
-For a private deployment, use the environment variables above instead of the demo passwords. The server binds to `127.0.0.1` by default for local safety; set `HOST=0.0.0.0` only on a trusted host.
+For a private deployment, change the demo passwords in `server.js`. The server binds to `127.0.0.1` by default for local safety; set `HOST=0.0.0.0` only on a trusted host.
 
 Login uses httpOnly JWT cookies:
 
