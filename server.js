@@ -671,6 +671,10 @@ app.get("/learner.html", (req, res) => {
 app.use(express.static(path.join(__dirname, "public")));
 app.get("/", (_req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 
-app.listen(PORT, HOST, () => {
-  console.log(`Study tracker running at http://${HOST}:${PORT}`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, HOST, () => {
+    console.log(`Study tracker running at http://${HOST}:${PORT}`);
+  });
+}
+
+module.exports = app;
