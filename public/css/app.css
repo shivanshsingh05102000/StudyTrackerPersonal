@@ -1113,6 +1113,16 @@ th {
   font-weight: 600;
 }
 
+.schedule-editor-table th:nth-child(4),
+.schedule-editor-table td:nth-child(4) {
+  min-width: 230px;
+}
+
+.schedule-editor-table th:nth-child(5),
+.schedule-editor-table td:nth-child(5) {
+  min-width: 280px;
+}
+
 tbody tr {
   transition: background-color 160ms ease;
 }
@@ -1124,6 +1134,84 @@ tbody tr:hover {
 .table-wrap {
   overflow-x: auto;
   padding-bottom: 2px;
+}
+
+.completion-column {
+  min-width: 280px;
+}
+
+.admin-progress-item {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, var(--rule) 82%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--surface-raised) 46%, var(--surface));
+  padding: 8px;
+}
+
+.admin-progress-item + .admin-progress-item {
+  margin-top: 8px;
+}
+
+.admin-progress-item.complete {
+  border-color: color-mix(in srgb, var(--moss) 48%, var(--rule));
+  background: color-mix(in srgb, var(--moss) 12%, var(--surface));
+}
+
+.admin-progress-item.static {
+  border-color: color-mix(in srgb, var(--subject-static-gk) 46%, var(--rule));
+  background: var(--subject-static-gk-fill);
+  color: var(--subject-static-gk-ink);
+}
+
+.admin-progress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.admin-progress-head strong,
+.admin-progress-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.admin-progress-title {
+  color: var(--ink-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.admin-progress-item.static .admin-progress-title {
+  color: var(--subject-static-gk-ink);
+}
+
+.admin-resource-row {
+  gap: 6px;
+}
+
+.admin-resource-check {
+  min-height: 28px;
+  border: 1px solid color-mix(in srgb, var(--rule) 76%, transparent);
+  border-radius: 999px;
+  background: var(--control);
+  padding: 3px 8px;
+  white-space: nowrap;
+}
+
+.admin-progress-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.admin-progress-actions button {
+  min-height: 28px;
+  padding: 4px 8px;
+  font-size: 12px;
 }
 
 .topic-pill {

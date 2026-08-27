@@ -1,4 +1,4 @@
-import { datesBetween, escapeHtml, request } from "../api.js";
+import { datesBetween, escapeHtml, request, resourceLabel } from "../api.js";
 
 const dayTypes = ["regular", "heavy", "holiday_bonus", "break_intensive", "buffer", "overflow", "revision", "sectional", "mock"];
 
@@ -13,6 +13,64 @@ function topicPill(topic) {
       <span>${escapeHtml(topic.subject)}: ${escapeHtml(topic.topic)}</span>
     </label>
   `;
+}
+
+function resourceCheckboxes(topic) {
+  return Object.entries(topic.resources || {}).map(([key, status]) => `
+    <label class="check-label admin-resource-check">
+      <input type="checkbox" data-admin-resource="${escapeHtml(key)}" ${status === "done" ? "checked" : ""}>
+      ${escapeHtml(resourceLabel(key))}
+    </label>
+  `).join("");
+}
+
+function topicProgressEditor(topic, day) {
+  const done = Object.values(topic.resources || {}).filter((status) => status === "done").length;
+  const total = Object.keys(topic.resources || {}).length;
+  return `
+    <article class="admin-progress-item ${topic.status === "done" ? "complete" : ""}" data-progress-topic-id="${escapeHtml(topic.id)}" data-completed-date="${escapeHtml(day.date)}">
+      <div class="admin-progress-head">
+        <strong>${escapeHtml(topic.subject)}</strong>
+        <span class="chip">${done}/${total}</span>
+      </div>
+      <div class="admin-progress-title">${escapeHtml(topic.topic)}</div>
+      <div class="resource-row admin-resource-row">${resourceCheckboxes(topic)}</div>
+      <div class="admin-progress-actions">
+        <button class="mark-topic-complete" type="button">Complete</button>
+        <button class="clear-topic-progress" type="button">Clear</button>
+      </div>
+    </article>
+  `;
+}
+
+function staticGkProgressEditor(day, state) {
+  const block = day.staticGk;
+  if (!block) return "";
+  const labels = [block.itemId, ...(block.drillIds || [])]
+    .map((id) => state.staticGk[id]?.label)
+    .filter(Boolean);
+  return `
+    <article class="admin-progress-item static" data-progress-gk-date="${escapeHtml(day.date)}">
+      <div class="admin-progress-head">
+        <strong>Static GK</strong>
+        <span class="chip">${block.status === "done" ? "done" : "pending"}</span>
+      </div>
+      <div class="admin-progress-title">${escapeHtml(labels.join(", ") || String(block.mode || "scheduled").replaceAll("_", " "))}</div>
+      <label class="check-label admin-resource-check">
+        <input class="admin-gk-complete" type="checkbox" ${block.status === "done" ? "checked" : ""}>
+        Complete
+      </label>
+    </article>
+  `;
+}
+
+function dayProgressEditor(day, state) {
+  const topics = (day.topicIds || []).map((id) => state.topics[id]).filter(Boolean);
+  const blocks = [
+    ...topics.map((topic) => topicProgressEditor(topic, day)),
+    staticGkProgressEditor(day, state)
+  ].filter(Boolean);
+  return blocks.length ? blocks.join("") : `<span class="chip">none</span>`;
 }
 
 function staticGkPill(day, state) {
@@ -73,13 +131,14 @@ export function renderEditor(target, data, reload) {
       <div id="shift-preview" class="warning hidden"></div>
     </section>
     <section class="section table-wrap">
-      <table>
+      <table class="schedule-editor-table">
         <thead>
           <tr>
             <th>Date</th>
             <th>Type</th>
             <th>Capacity</th>
             <th>Topics</th>
+            <th>Completion</th>
             <th>Lock</th>
             <th>Admin note</th>
           </tr>
@@ -96,6 +155,7 @@ export function renderEditor(target, data, reload) {
                 ${(day.specialTasks || []).map(specialTaskPill).join("")}
                 ${(day.topicIds || []).length === 0 && !day.staticGk && !(day.specialTasks || []).length ? `<span class="chip">empty</span>` : ""}
               </td>
+              <td class="completion-column">${dayProgressEditor(day, state)}</td>
               <td><label class="check-label"><input class="locked" type="checkbox" ${day.locked ? "checked" : ""}> Locked</label></td>
               <td><textarea class="admin-note">${escapeHtml(day.adminNote || "")}</textarea></td>
             </tr>
@@ -178,6 +238,38 @@ export function renderEditor(target, data, reload) {
     row.querySelector(".capacity").addEventListener("change", (event) => patchDay({ capacity: Number(event.target.value) }).then(reload));
     row.querySelector(".locked").addEventListener("change", (event) => patchDay({ locked: event.target.checked }));
     row.querySelector(".admin-note").addEventListener("blur", (event) => patchDay({ adminNote: event.target.value }));
+  });
+
+  target.querySelectorAll("[data-progress-topic-id]").forEach((item) => {
+    const topicId = item.dataset.progressTopicId;
+    const completedDate = item.dataset.completedDate;
+    const saveProgress = async (body) => {
+      await request(`/api/admin/topic/${topicId}/progress`, {
+        method: "PATCH",
+        body: { completedDate, ...body }
+      });
+      message.textContent = `Saved progress for ${completedDate}`;
+      await reload();
+    };
+    item.querySelectorAll("[data-admin-resource]").forEach((input) => {
+      input.addEventListener("change", () => {
+        saveProgress({ resources: { [input.dataset.adminResource]: input.checked ? "done" : "pending" } });
+      });
+    });
+    item.querySelector(".mark-topic-complete")?.addEventListener("click", () => saveProgress({ complete: true }));
+    item.querySelector(".clear-topic-progress")?.addEventListener("click", () => saveProgress({ clear: true }));
+  });
+
+  target.querySelectorAll("[data-progress-gk-date]").forEach((item) => {
+    const date = item.dataset.progressGkDate;
+    item.querySelector(".admin-gk-complete")?.addEventListener("change", async (event) => {
+      await request(`/api/admin/day/${date}/static-gk`, {
+        method: "PATCH",
+        body: { status: event.target.checked ? "done" : "pending" }
+      });
+      message.textContent = `Saved Static GK for ${date}`;
+      await reload();
+    });
   });
 
   target.dataset.breakDates = datesBetween(state.config.windowStart, state.config.windowEnd).length;

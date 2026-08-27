@@ -158,6 +158,24 @@ async function run() {
     const adminState = await request("/api/state", {}, adminJar);
     assert(adminState.response.status === 200, "Admin state API failed.");
     assert(Object.keys(adminState.json.state.topics).length === 90, "Admin state topic count is wrong.");
+    const adminTopic = Object.values(adminState.json.state.topics)[0];
+    assert(Object.prototype.hasOwnProperty.call(adminTopic.resources, "notes"), "Notes resource is missing from topics.");
+    const adminProgress = await request(`/api/admin/topic/${adminTopic.id}/progress`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: { complete: true, completedDate: adminTopic.scheduledDate }
+    }, adminJar);
+    assert(adminProgress.response.status === 200, "Admin topic progress update failed.");
+    assert(adminProgress.json.topic.status === "done", "Admin complete did not mark topic done.");
+    assert(adminProgress.json.topic.resources.notes === "done", "Admin complete did not mark Notes done.");
+    assert(String(adminProgress.json.topic.completedAt).startsWith(adminTopic.scheduledDate), "Admin complete did not use the selected completion date.");
+    const adminGkProgress = await request("/api/admin/day/2026-11-02/static-gk", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: { status: "done" }
+    }, adminJar);
+    assert(adminGkProgress.response.status === 200, "Admin Static GK progress update failed.");
+    assert(adminGkProgress.json.day.staticGk.status === "done", "Admin Static GK did not save done status.");
 
     const csvExport = await request("/api/export/progress.csv", {}, adminJar);
     assert(csvExport.response.status === 200 && csvExport.text.includes("type,id,subject,title"), "Progress CSV export failed.");

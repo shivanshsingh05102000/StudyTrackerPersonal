@@ -71,10 +71,10 @@ function topicCard(topic, stats) {
         ${low ? `<div class="amber-band">Below threshold. This topic will be re-queued for revision.</div>` : ""}
       ` : ""}
       <details>
-        <summary>Minutes and notes</summary>
+        <summary>Minutes and comment</summary>
         <div class="details-grid">
           <label class="field"><span>Actual minutes</span><input class="actual-input" type="number" min="0" value="${topic.actualMinutes ?? ""}"></label>
-          <label class="field"><span>Notes</span><textarea class="notes-input">${escapeHtml(topic.notes || "")}</textarea></label>
+          <label class="field"><span>Study comment</span><textarea class="notes-input">${escapeHtml(topic.notes || "")}</textarea></label>
         </div>
       </details>
       <div class="saved-indicator" aria-live="polite"></div>

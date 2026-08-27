@@ -82,7 +82,7 @@ export function subjectClass(subject) {
 }
 
 export function resourceLabel(key) {
-  const labels = { video: "Video", pdf: "PDF", mcq: "MCQ" };
+  const labels = { video: "Video", pdf: "PDF", mcq: "MCQ", notes: "Notes" };
   return labels[key] || key;
 }
 

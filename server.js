@@ -229,6 +229,17 @@ function sendState(res, state, body = {}) {
   res.json({ ...body, stats, updatedAt: state.updatedAt });
 }
 
+function completionDateFromState(state, value, fallback) {
+  const date = String(value || fallback || todayIso()).slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Completion date must be YYYY-MM-DD.");
+  if (!state.days[date]) throw new Error(`${date} is outside the schedule window.`);
+  return date;
+}
+
+function completionTimestamp(date, fallbackNow = true) {
+  return fallbackNow && date === todayIso() ? new Date().toISOString() : `${date}T12:00:00.000Z`;
+}
+
 function hydratedStaticGk(state, block) {
   if (!block) return null;
   return {
@@ -285,34 +296,107 @@ async function mutateAdmin(req, res, action, fn) {
   }
 }
 
-function resourceToggle(state, topicId, resource, done) {
+function applyTopicProgress(state, topicId, patch, options = {}) {
   const topic = state.topics[topicId];
   if (!topic) throw new Error("Topic was not found.");
-  if (!Object.prototype.hasOwnProperty.call(topic.resources, resource)) {
-    throw new Error(`This topic does not have a ${resource} resource.`);
-  }
-  const now = new Date().toISOString();
-  const today = todayIso();
+  const keys = Object.keys(topic.resources || {});
+  if (!keys.length) throw new Error("This topic has no trackable resources.");
+
+  const completedDate = completionDateFromState(state, options.completedDate, topic.scheduledDate);
+  const timestamp = completionTimestamp(completedDate, !options.forceDatedTimestamp);
   const wasDone = topic.status === "done";
-  topic.resources[resource] = done ? "done" : "pending";
-  topic.resourceCompletedAt = topic.resourceCompletedAt || {};
-  if (done) {
-    topic.resourceCompletedAt[resource] = now;
-    const todayDay = state.days[today];
-    if (compareIso(today, topic.scheduledDate) > 0 || todayDay?.dayType === "overflow") topic.rushed = true;
+  const resources = {};
+
+  if (patch.clear) {
+    keys.forEach((key) => {
+      resources[key] = "pending";
+    });
+  } else if (patch.complete) {
+    keys.forEach((key) => {
+      resources[key] = "done";
+    });
   } else {
-    delete topic.resourceCompletedAt[resource];
+    Object.entries(patch.resources || {}).forEach(([resource, value]) => {
+      if (!Object.prototype.hasOwnProperty.call(topic.resources, resource)) {
+        throw new Error(`This topic does not have a ${resource} resource.`);
+      }
+      resources[resource] = value === true || value === "done" ? "done" : "pending";
+    });
   }
+
+  if (!Object.keys(resources).length) throw new Error("Choose at least one resource to update.");
+
+  topic.resourceCompletedAt = topic.resourceCompletedAt || {};
+  Object.entries(resources).forEach(([resource, status]) => {
+    topic.resources[resource] = status;
+    if (status === "done") {
+      topic.resourceCompletedAt[resource] = timestamp;
+    } else {
+      delete topic.resourceCompletedAt[resource];
+    }
+  });
+
+  const completedLate = compareIso(completedDate, topic.scheduledDate) > 0 || state.days[completedDate]?.dayType === "overflow";
+  if (completedLate && Object.values(resources).includes("done")) topic.rushed = true;
+
   recomputeTopicStatus(topic);
-  if (topic.status === "done" && !wasDone) {
-    topic.completedAt = now;
-    spawnRevisions(state, topic, today);
+  if (topic.status === "done") {
+    topic.completedAt = timestamp;
+    if (!wasDone || options.rescheduleRevisions) {
+      const today = todayIso();
+      const retainedPast = new Set((topic.revisionsDue || []).filter((date) => compareIso(date, today) < 0));
+      topic.revisionsDue = [...retainedPast];
+      spawnRevisions(state, topic, completedDate);
+      topic.revisionsDue = (topic.revisionsDue || []).filter((date) => retainedPast.has(date) || compareIso(date, today) >= 0);
+    }
   }
   if (topic.status !== "done" && wasDone) {
     topic.completedAt = null;
-    removeUnmetRevisions(topic, today);
+    removeUnmetRevisions(topic, todayIso());
   }
   return topic;
+}
+
+function resourceToggle(state, topicId, resource, done) {
+  return applyTopicProgress(state, topicId, { resources: { [resource]: done ? "done" : "pending" } }, { completedDate: todayIso() });
+}
+
+function adminTopicProgress(state, topicId, body = {}) {
+  const topic = applyTopicProgress(state, topicId, body, {
+    completedDate: body.completedDate,
+    forceDatedTimestamp: true,
+    rescheduleRevisions: Boolean(body.complete)
+  });
+  recomputeDayEstimate(state, topic.scheduledDate);
+  const action = body.clear ? "cleared" : body.complete ? "marked complete" : "updated";
+  return {
+    ok: true,
+    topic,
+    day: hydrateDay(state, topic.scheduledDate),
+    summary: `${action} ${topic.subject}: ${topic.topic} for ${String(body.completedDate || topic.scheduledDate).slice(0, 10)}`
+  };
+}
+
+function adminStaticGkProgress(state, date, body = {}) {
+  const dayDate = completionDateFromState(state, date, todayIso());
+  const day = state.days[dayDate];
+  if (!day.staticGk) throw new Error(`${dayDate} has no Static GK block.`);
+  const status = body.status === "done" || body.complete ? "done" : "pending";
+  const timestamp = completionTimestamp(dayDate, false);
+  day.staticGk.status = status;
+  const ids = [day.staticGk.itemId, ...(day.staticGk.drillIds || [])].filter(Boolean);
+  ids.forEach((id) => {
+    const item = state.staticGk[id];
+    if (!item) return;
+    item.status = status;
+    if (status === "done") {
+      item.lastSeen = timestamp;
+      item.seenCount = Math.max(Number(item.seenCount || 0), 1);
+    } else if (item.lastSeen === timestamp) {
+      item.lastSeen = null;
+    }
+  });
+  return { ok: true, day: hydrateDay(state, dayDate), summary: `Marked Static GK ${status} for ${dayDate}` };
 }
 
 function resetProgressKeepSchedule(state) {
@@ -645,6 +729,14 @@ app.post("/api/admin/push-backlog", requireAdmin, (req, res) => {
 
 app.patch("/api/admin/day/:date", requireAdmin, (req, res) => {
   mutateAdmin(req, res, "update_day", (state) => updateDay(state, req.params.date, req.body));
+});
+
+app.patch("/api/admin/topic/:id/progress", requireAdmin, (req, res) => {
+  mutateAdmin(req, res, "topic_progress", (state) => adminTopicProgress(state, req.params.id, req.body));
+});
+
+app.patch("/api/admin/day/:date/static-gk", requireAdmin, (req, res) => {
+  mutateAdmin(req, res, "static_gk_progress", (state) => adminStaticGkProgress(state, req.params.date, req.body));
 });
 
 app.post("/api/admin/holiday", requireAdmin, (req, res) => {
